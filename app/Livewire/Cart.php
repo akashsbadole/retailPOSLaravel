@@ -76,7 +76,9 @@ class Cart extends Component
 
         $order = Order::create([
             'customer_id' => $customerId,
-            'total_price' => $total_price
+            'total_price' => $total_price,
+            'discount_amount' => 0.00,
+            'status' => 'pending'
         ]);
 
         

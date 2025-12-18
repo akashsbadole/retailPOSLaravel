@@ -47,20 +47,41 @@ class ProductResource extends Resource
                     TextInput::make('barcode')
                         ->required()
                         ->unique(Product::class, 'barcode', ignoreRecord: true),
+                    TextInput::make('sku')
+                        ->label('SKU')
+                        ->unique(Product::class, 'sku', ignoreRecord: true)
+                        ->nullable(),
                     TextInput::make('price')
+                        ->label('Selling Price')
                         ->numeric()
                         ->required(),
+                    TextInput::make('cost_price')
+                        ->label('Cost Price')
+                        ->numeric()
+                        ->step(0.01)
+                        ->nullable(),
                     TextInput::make('quantity')
                         ->numeric()
                         ->minValue(0)
                         ->default(1)
                         ->required(),
+                    TextInput::make('minimum_stock')
+                        ->label('Minimum Stock')
+                        ->numeric()
+                        ->minValue(0)
+                        ->default(function () {
+                            return config('settings.default_minimum_stock', 10);
+                        })
+                        ->helperText('Alert when stock reaches this level')
+                        ->required(),
                     TextInput::make('tax')
                         ->label('Tax (%)')
-                        ->suffixIcon('heroicon-o-information-circle')  
-                        ->helperText('Example: 5 for 5% VAT/GST.')
+                        ->suffixIcon('heroicon-o-information-circle')
+                        ->helperText('Leave empty to use default tax rate from settings (' . (config('settings.default_tax_rate', '0.00')) . '%). Example: 5 for 5% VAT/GST.')
                         ->numeric()
-                        ->default(0.00),
+                        ->default(function () {
+                            return config('settings.default_tax_rate', 0.00);
+                        }),
                     FileUpload::make('image')
                         ->disk('public_uploads') 
                         ->panelLayout('grid') 
@@ -84,11 +105,37 @@ class ProductResource extends Resource
                                 ->size(50)  
                                 ->square(),
                 TextColumn::make('barcode')->searchable(),
-                TextInputColumn::make('quantity')->type('number')  
-                                ->sortable() 
+                TextColumn::make('sku')->searchable(),
+                TextInputColumn::make('quantity')->type('number')
+                                ->sortable()
                                 ->width(10)
-                                ->rules(['required', 'integer', 'min:1']),
-                TextColumn::make('price')->sortable(),              
+                                ->rules(['required', 'integer', 'min:1'])
+                                ->formatStateUsing(fn ($record) => $record->quantity)
+                                ->color(fn ($record): string => match (true) {
+                                    $record->quantity <= 0 => 'danger',
+                                    $record->isLowStock() => 'warning',
+                                    default => 'success',
+                                }),
+                TextColumn::make('minimum_stock')
+                                ->label('Min Stock')
+                                ->sortable()
+                                ->width(10)
+                                ->alignCenter(),
+                TextColumn::make('price')->label('Selling Price')->sortable(),
+                TextColumn::make('cost_price')->label('Cost Price')->sortable(),
+                TextColumn::make('stock_status')
+                                ->label('Stock Status')
+                                ->badge()
+                                ->color(fn ($record): string => match (true) {
+                                    $record->quantity <= 0 => 'danger',
+                                    $record->isLowStock() => 'warning',
+                                    default => 'success',
+                                })
+                                ->formatStateUsing(fn ($record): string => match (true) {
+                                    $record->quantity <= 0 => 'Out of Stock',
+                                    $record->isLowStock() => 'Low Stock',
+                                    default => 'In Stock',
+                                }),
                 TextColumn::make('created_at')->dateTime()->sortable(),
             ])
             ->filters([
@@ -108,7 +155,9 @@ class ProductResource extends Resource
                         ->withColumns([
                             Column::make('name')->heading('Name'),
                             Column::make('barcode')->heading('Barcode'),
-                            Column::make('price')->heading('Price'),
+                            Column::make('sku')->heading('SKU'),
+                            Column::make('price')->heading('Selling Price'),
+                            Column::make('cost_price')->heading('Cost Price'),
                             Column::make('tax')->heading('Tax'),
                             Column::make('quantity')->heading('Quantity'),
                         ])

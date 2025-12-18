@@ -20,6 +20,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\Filter;
+use Filament\Tables\Filters\SelectFilter;
 use Filament\Forms\Components\DatePicker;
 use pxlrbt\FilamentExcel\Actions\Tables\ExportBulkAction;
 use pxlrbt\FilamentExcel\Exports\ExcelExport;
@@ -55,6 +56,10 @@ class OrderResource extends Resource
                             ->formatStateUsing(fn ($record) => $record->customer->first_name . ' ' . $record->customer->last_name),
                 TextColumn::make('total_price')
                             ->formatStateUsing(fn ($record) => $currency_symbol.$record->total_price)->sortable(),
+                TextColumn::make('payments.first.payment_method')
+                            ->label('Payment Method')
+                            ->formatStateUsing(fn ($state) => $state ? ucfirst($state) : '-')
+                            ->sortable(),
                 TextColumn::make('created_at')->sortable()->dateTime(),
             ])
             ->defaultSort('id', 'desc')
@@ -70,7 +75,7 @@ class OrderResource extends Resource
                     return $query
                         ->when($data['start_date'] ?? null, fn ($query, $date) => $query->whereDate('created_at', '>=', $date))
                         ->when($data['end_date'] ?? null, fn ($query, $date) => $query->whereDate('created_at', '<=', $date));
-                }) 
+                })
                 ->indicateUsing(function (array $data) {
                     $indicators = [];
         
@@ -84,6 +89,21 @@ class OrderResource extends Resource
         
                     return $indicators;
                 }),
+                SelectFilter::make('payment_method')
+                    ->label('Payment Method')
+                    ->options([
+                        'cash' => 'Cash',
+                        'card' => 'Card',
+                        'upi' => 'UPI',
+                    ])
+                    ->query(function ($query, array $data) {
+                        return $query
+                            ->when($data['value'] ?? null, function ($query, $paymentMethod) {
+                                $query->whereHas('payments', function ($query) use ($paymentMethod) {
+                                    $query->where('payment_method', $paymentMethod);
+                                });
+                            });
+                    }),
             ])
             ->recordActions([
                 EditAction::make(),

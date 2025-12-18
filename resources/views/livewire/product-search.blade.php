@@ -25,6 +25,9 @@
 
                 <img src="{{$product->getImageUrl()}}" alt="Product 1" class="object-contain max-h-full">
                 <p class="text-gray-600 p-2 text-sm">{{$product->name}} ({{$product->quantity}})</p>
+                @if($product->sku)
+                <p class="text-gray-400 p-2 pt-0 text-xs">SKU: {{$product->sku}}</p>
+                @endif
                 <p class="text-gray-600 p-2 pt-0 text-md">{{$currency_symbol .  $product->price}}</p>
                 @if($product->quantity < 1)
                 <div class="absolute top-1 right-1 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded">

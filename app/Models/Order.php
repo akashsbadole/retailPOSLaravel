@@ -8,7 +8,34 @@ class Order extends Model
 {
     protected $fillable = [
         'customer_id',
-        'total_price'
+        'total_price',
+        'discount_amount',
+        'status',
+        'discount_price'
+    ];
+
+    // Add a boot method to ensure required fields are always set
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::creating(function ($order) {
+            // Ensure default values for required fields
+            if (!$order->discount_amount) {
+                $order->discount_amount = 0.00;
+            }
+            if (!$order->status) {
+                $order->status = 'pending';
+            }
+            if (!$order->total_price) {
+                $order->total_price = 0.00;
+            }
+        });
+    }
+
+    protected $casts = [
+        'total_price' => 'decimal:2',
+        'discount_amount' => 'decimal:2'
     ];
 
     public function items()

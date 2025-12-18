@@ -19,7 +19,10 @@ class ProductSearch extends Component
     public function mount($orderId)
     {
         $this->orderId = $orderId;
-        $this->products = Product::where('name', 'like', '%' . $this->query . '%')->limit(10)->get();
+        $this->products = Product::where('name', 'like', '%' . $this->query . '%')
+                                ->orWhere('sku', 'like', '%' . $this->query . '%')
+                                ->orWhere('barcode', 'like', '%' . $this->query . '%')
+                                ->limit(10)->get();
 
     }
 
@@ -41,38 +44,86 @@ class ProductSearch extends Component
     }
 
     public function updated(){
-        $this->products = Product::where('name', 'like', '%' . $this->query . '%')->limit(10)->get();
+        $this->products = Product::where('name', 'like', '%' . $this->query . '%')
+                                ->orWhere('sku', 'like', '%' . $this->query . '%')
+                                ->orWhere('barcode', 'like', '%' . $this->query . '%')
+                                ->limit(10)->get();
     }
 
     public function addToCart( $product_id, $quantity = 1 ){
 
         $product = Product::find( $product_id );
+        
+        // Check if product exists
+        if (!$product) {
+            $this->dispatch('showNotification', 'Product not found!', 'error');
+            return;
+        }
+
+        // Check if product is in stock
+        if (!$product->isInStock()) {
+            $this->dispatch('showNotification', 'Product is out of stock!', 'error');
+            return;
+        }
+
+        // Check if requested quantity is available
+        if (!$product->hasStockFor($quantity)) {
+            $this->dispatch('showNotification',
+                "Only {$product->quantity} items available in stock!",
+                'error'
+            );
+            return;
+        }
+
+        // Show warning for low stock products
+        if ($product->isLowStock()) {
+            $this->dispatch('showNotification',
+                "Warning: {$product->name} is running low on stock ({$product->quantity} remaining)!",
+                'warning'
+            );
+        }
+
+        // Use product tax or default tax rate from settings
+        $taxRate = $product->tax ?? config('settings.default_tax_rate', 0);
+        
         $cartItem = OrderItem::firstOrCreate(
             [
                 'order_id' => $this->orderId, 'product_id' => $product_id
             ],[
-                'name' => $product->name, 
-                'quantity' => 0, 
-                'price' => $product->price, 
-                'tax' => $product->tax
-            ] 
+                'name' => $product->name,
+                'quantity' => 0,
+                'price' => $product->price,
+                'tax' => $taxRate,
+                'discount_percentage' => 0
+            ]
         );
 
-        if( ($product->quantity - $quantity) < 0 ){
-            if( $cartItem->quantity < 1 ){
-                $cartItem->delete();
-            }
+        // Check if adding this quantity would exceed available stock
+        $totalQuantity = $cartItem->quantity + $quantity;
+        if (!$product->hasStockFor($totalQuantity)) {
+            $this->dispatch('showNotification',
+                "Cannot add {$quantity} more items. Only {$product->quantity} available in stock!",
+                'error'
+            );
             return;
         }
         
+        // Update cart item quantity
         $cartItem->update([
-            'quantity' => $cartItem->quantity + $quantity
+            'quantity' => $totalQuantity
         ]);
 
-        $product->quantity = $product->quantity - $quantity;
-        $product->save();
+        // Deduct stock using the model method
+        if (!$product->deductStock($quantity)) {
+            $this->dispatch('showNotification', 'Failed to update stock!', 'error');
+            return;
+        }
 
         $this->dispatch('cartUpdated');
+        $this->dispatch('showNotification',
+            "{$product->name} added to cart!",
+            'success'
+        );
     }
 
 }

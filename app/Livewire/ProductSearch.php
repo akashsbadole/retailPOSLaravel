@@ -15,7 +15,10 @@ class ProductSearch extends Component
 
     public function mount()
     {
-        $this->products = Product::where('name', 'like', '%' . $this->query . '%')->limit(10)->get();
+        $this->products = Product::where('name', 'like', '%' . $this->query . '%')
+                                ->orWhere('sku', 'like', '%' . $this->query . '%')
+                                ->orWhere('barcode', 'like', '%' . $this->query . '%')
+                                ->limit(10)->get();
     }
 
     public function render()
@@ -36,7 +39,10 @@ class ProductSearch extends Component
     }
 
     public function updated(){
-        $this->products = Product::where('name', 'like', '%' . $this->query . '%')->limit(10)->get();
+        $this->products = Product::where('name', 'like', '%' . $this->query . '%')
+                                ->orWhere('sku', 'like', '%' . $this->query . '%')
+                                ->orWhere('barcode', 'like', '%' . $this->query . '%')
+                                ->limit(10)->get();
     }
 
     public function addToCart( $product_id, $quantity = 1 ){

@@ -12,11 +12,23 @@ class OrderItem extends Model
         'tax',
         'quantity',
         'product_id',
-        'order_id'
+        'order_id',
+        'discount_percentage'
+    ];
+
+    protected $casts = [
+        'price' => 'decimal:4',
+        'tax' => 'decimal:2',
+        'discount_percentage' => 'decimal:2'
     ];
 
     public function product()
     {
         return $this->belongsTo(Product::class);
+    }
+
+    public function order()
+    {
+        return $this->belongsTo(Order::class);
     }
 }
