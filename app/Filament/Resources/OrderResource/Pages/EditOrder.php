@@ -29,7 +29,7 @@ class EditOrder extends EditRecord
                 ])
                 ->icon('heroicon-o-printer')
                 ->color('success'),
-            Action::make('print')
+            Action::make('preview')
                 ->label('Preview')
                 ->url(fn($record)=> "/print/" . $record->id, shouldOpenInNewTab:true)
                 ->icon('heroicon-o-document-text')

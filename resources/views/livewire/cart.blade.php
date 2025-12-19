@@ -53,7 +53,33 @@
                     <td colspan="3" class="px-4 py-2 border-r text-right font-bold">Grand Total</td>
                     <td colspan="2" class="px-4 py-2 text-center font-bold">{{ $currency_symbol }}{{ number_format($grand_total, 2) }}</td>
                 </tr>
- 
+
+                @if(auth()->user()->can('discount.full') || auth()->user()->can('discount.limited'))
+                <tr class="border-gray-400 border">
+                    <td colspan="3" class="px-4 py-2 border-r text-right font-semibold">Discount</td>
+                    <td colspan="2" class="px-4 py-2 text-center">
+                        <div class="flex items-center gap-2">
+                            <input type="number"
+                                   wire:model.live="discountPercentage"
+                                   min="0"
+                                   max="{{ auth()->user()->getMaxDiscountPercentage() }}"
+                                   class="p-1 text-center w-20 text-sm text-gray-900 border border-gray-300 rounded-md bg-gray-50 focus:ring-blue-500 focus:border-blue-500" />
+                            <span>%</span>
+                            @if($discountAmount > 0)
+                                <span class="text-green-600 font-semibold">-{{ $currency_symbol }}{{ number_format($discountAmount, 2) }}</span>
+                            @endif
+                        </div>
+                    </td>
+                </tr>
+                @endif
+
+                @if($discountAmount > 0)
+                <tr class="bg-gray-100 border-gray-400 border">
+                    <td colspan="3" class="px-4 py-2 border-r text-right font-bold">Total After Discount</td>
+                    <td colspan="2" class="px-4 py-2 text-center font-bold">{{ $currency_symbol }}{{ number_format($grand_total - $discountAmount, 2) }}</td>
+                </tr>
+                @endif
+  
             @endif
             </tbody>
         </table>

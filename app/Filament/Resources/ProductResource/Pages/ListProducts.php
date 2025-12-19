@@ -23,7 +23,8 @@ class ListProducts extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            Action::make('Import Products')
+            Action::make('import_products')
+            ->label('Import Products')
             ->icon('heroicon-o-arrow-up-tray')
             ->schema([
                 FileUpload::make('file')

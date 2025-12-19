@@ -9,6 +9,7 @@ use App\Models\OrderItem;
 use App\Models\Payment;
 use App\Models\Product;
 use App\Models\Setting;
+use App\Models\CashierShift;
 use Livewire\Attributes\On;
 
 class Cart extends Component
@@ -209,21 +210,78 @@ class Cart extends Component
             return;
         }
         
-        // Create payment record
-        Payment::create([
+        // Get or create current shift
+        $currentShift = CashierShift::getCurrentShift();
+        if (!$currentShift && config('settings.require_shift_opening', '1')) {
+            $this->dispatch('showNotification', 'No active shift found! Please open a shift first.', 'error');
+            return;
+        }
+        
+        // If no shift exists and shift opening is not required, create one automatically
+        if (!$currentShift && !config('settings.require_shift_opening', '1')) {
+            $currentShift = CashierShift::openShift(auth()->user(), 0);
+        }
+        
+        // Create payment record with shift association
+        $payment = Payment::create([
             'order_id' => $this->orderId,
             'user_id' => auth()->user()->id,
             'amount' => $final_total,
             'payment_method' => $this->paymentMethod,
+            'cashier_shift_id' => $currentShift?->id,
         ]);
         
-        // Update order status to completed
+        // Update order with shift information
         $order = Order::find($this->orderId);
         $order->status = 'completed';
+        $order->cashier_shift_id = $currentShift?->id;
         $order->save();
+        
+        // Update shift totals if shift exists
+        if ($currentShift) {
+            $currentShift->updateTotalsFromOrder($order);
+        }
+        
+        // Payment reconciliation check
+        $this->performPaymentReconciliation($order, $payment, $final_total);
         
         $this->dispatch('showNotification', 'Order completed successfully!', 'success');
         return $this->redirect( url('admin/orders') );
+    }
+    
+    /**
+     * Perform payment reconciliation checks
+     */
+    private function performPaymentReconciliation(Order $order, Payment $payment, float $expectedTotal): void
+    {
+        // Check if payment amount matches expected total
+        if (abs($payment->amount - $expectedTotal) > 0.01) {
+            \Log::warning('Payment reconciliation mismatch', [
+                'order_id' => $order->id,
+                'expected_total' => $expectedTotal,
+                'payment_amount' => $payment->amount,
+                'difference' => abs($payment->amount - $expectedTotal)
+            ]);
+        }
+        
+        // Check if order total matches sum of all payments
+        $totalPayments = $order->payments()->sum('amount');
+        if (abs($totalPayments - $order->total_price) > 0.01) {
+            \Log::warning('Order payment total mismatch', [
+                'order_id' => $order->id,
+                'order_total' => $order->total_price,
+                'total_payments' => $totalPayments,
+                'difference' => abs($totalPayments - $order->total_price)
+            ]);
+        }
+        
+        // Log successful reconciliation
+        \Log::info('Payment reconciliation completed', [
+            'order_id' => $order->id,
+            'payment_method' => $payment->payment_method,
+            'amount' => $payment->amount,
+            'shift_id' => $payment->cashier_shift_id
+        ]);
     }
 
 }

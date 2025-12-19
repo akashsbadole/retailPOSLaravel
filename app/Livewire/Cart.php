@@ -13,6 +13,10 @@ class Cart extends Component
 {
     public $cartItems = [];
 
+    public $discountPercentage = 0;
+
+    public $discountAmount = 0;
+
     private $currency_symbol;
 
     public function mount()
@@ -74,16 +78,19 @@ class Cart extends Component
             return;
         }
 
+        // Calculate discount based on user permissions
+        $discountAmount = $this->calculateDiscountAmount($total_price);
+
         $order = Order::create([
             'customer_id' => $customerId,
             'total_price' => $total_price,
-            'discount_amount' => 0.00,
+            'discount_amount' => $discountAmount,
             'status' => 'pending'
         ]);
 
         
 
-        foreach ($items as $item) {  
+        foreach ($items as $item) {
             $product = Product::find( $item->product_id );
 
             $order->items()->create([
@@ -91,6 +98,7 @@ class Cart extends Component
                 'price' => $item->price,
                 'tax' => $item->tax,
                 'quantity' => $item->quantity,
+                'discount_percentage' => $this->discountPercentage,
                 'product_id' => $item->product_id,
             ]);
             $total_price += $item->quantity * $item->price;
@@ -108,6 +116,60 @@ class Cart extends Component
 
         redirect( url('/admin/orders/'. $order->id .'/edit') );
 
+    }
+
+    public function canApplyDiscount(): bool
+    {
+        $user = auth()->user();
+        
+        if ($user->hasPermissionTo('discount.full')) {
+            return true;
+        }
+        
+        if ($user->hasPermissionTo('discount.limited')) {
+            return $this->discountPercentage <= 10; // Limited to 10% discount
+        }
+        
+        return false; // No discount access
+    }
+
+    public function getMaxDiscountPercentage(): int
+    {
+        $user = auth()->user();
+        
+        if ($user->hasPermissionTo('discount.full')) {
+            return 50; // Max 50% for full access
+        }
+        
+        if ($user->hasPermissionTo('discount.limited')) {
+            return 10; // Max 10% for limited access
+        }
+        
+        return 0; // No discount allowed
+    }
+
+    public function calculateDiscountAmount($totalPrice): float
+    {
+        if (!$this->canApplyDiscount()) {
+            return 0;
+        }
+        
+        $maxDiscount = $this->getMaxDiscountPercentage();
+        $actualDiscount = min($this->discountPercentage, $maxDiscount);
+        
+        return ($totalPrice * $actualDiscount) / 100;
+    }
+
+    public function updatedDiscountPercentage()
+    {
+        if ($this->discountPercentage < 0) {
+            $this->discountPercentage = 0;
+        }
+        
+        $maxDiscount = $this->getMaxDiscountPercentage();
+        if ($this->discountPercentage > $maxDiscount) {
+            $this->discountPercentage = $maxDiscount;
+        }
     }
 
 }

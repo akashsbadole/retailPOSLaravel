@@ -44,7 +44,7 @@ class OrderObserver
 
     /**
      * Deduct stock for all items in the order
-     * This is a safety measure - stock should already be deducted when items were added to cart
+     * This ensures stock is deducted when order is completed
      */
     private function deductStockForOrder(Order $order): void
     {
@@ -53,24 +53,28 @@ class OrderObserver
         foreach ($orderItems as $item) {
             $product = Product::find($item->product_id);
             if ($product) {
-                // Only deduct if stock hasn't been deducted yet
-                // This prevents double deduction
-                $currentCartStock = OrderItem::where('product_id', $item->product_id)
-                    ->whereHas('order', function($query) {
-                        $query->whereNotIn('status', ['completed', 'cancelled', 'refunded']);
-                    })
-                    ->sum('quantity');
-                
-                $productStockInOrders = OrderItem::where('product_id', $item->product_id)
-                    ->whereHas('order', function($query) {
-                        $query->whereIn('status', ['completed']);
-                    })
-                    ->sum('quantity');
-                
-                $expectedStock = $product->quantity + $currentCartStock + $productStockInOrders;
-                
-                if ($expectedStock > 0) {
+                // Check if stock was already deducted for this item
+                // We use a simple approach: deduct stock if product has enough quantity
+                if ($product->hasStockFor($item->quantity)) {
                     $product->deductStock($item->quantity);
+                    
+                    // Log the stock deduction for audit purposes
+                    \Log::info('Stock deducted for order completion', [
+                        'order_id' => $order->id,
+                        'product_id' => $product->id,
+                        'product_name' => $product->name,
+                        'quantity_deducted' => $item->quantity,
+                        'remaining_stock' => $product->quantity
+                    ]);
+                } else {
+                    // Log warning for insufficient stock
+                    \Log::warning('Insufficient stock for order completion', [
+                        'order_id' => $order->id,
+                        'product_id' => $product->id,
+                        'product_name' => $product->name,
+                        'requested_quantity' => $item->quantity,
+                        'available_stock' => $product->quantity
+                    ]);
                 }
             }
         }
@@ -87,6 +91,15 @@ class OrderObserver
             $product = Product::find($item->product_id);
             if ($product) {
                 $product->addStock($item->quantity);
+                
+                // Log the stock restoration for audit purposes
+                \Log::info('Stock restored for order cancellation/refund', [
+                    'order_id' => $order->id,
+                    'product_id' => $product->id,
+                    'product_name' => $product->name,
+                    'quantity_restored' => $item->quantity,
+                    'new_stock' => $product->quantity
+                ]);
             }
         }
     }

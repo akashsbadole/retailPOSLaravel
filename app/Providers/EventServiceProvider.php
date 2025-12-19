@@ -7,7 +7,9 @@ use Illuminate\Auth\Listeners\SendEmailVerificationNotification;
 use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
 use Illuminate\Support\Facades\Event;
 use App\Observers\OrderObserver;
+use App\Observers\SalesReturnObserver;
 use App\Models\Order;
+use App\Models\SalesReturn;
 
 class EventServiceProvider extends ServiceProvider
 {
@@ -28,6 +30,7 @@ class EventServiceProvider extends ServiceProvider
     public function boot(): void
     {
         Order::observe(OrderObserver::class);
+        SalesReturn::observe(SalesReturnObserver::class);
     }
 
     /**

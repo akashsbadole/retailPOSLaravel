@@ -18,6 +18,9 @@ use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
+use Filament\Navigation\NavigationItem;
+use Filament\Navigation\MenuItem;
+use Illuminate\Support\Facades\Auth;
 
 class AdminPanelProvider extends PanelProvider
 {
@@ -25,6 +28,7 @@ class AdminPanelProvider extends PanelProvider
     {
         return $panel
             ->default()
+            ->brandName('SuperMart')
             ->profile()
             ->id('admin')
             ->path('admin')
@@ -36,6 +40,8 @@ class AdminPanelProvider extends PanelProvider
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\\Filament\\Pages')
             ->pages([
                 Dashboard::class,
+                \App\Filament\Pages\ShiftManagement::class,
+                \App\Filament\Pages\ShiftReports::class,
             ])
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\\Filament\\Widgets')
             ->widgets([
@@ -58,6 +64,21 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->sidebarWidth('13rem')
             ->sidebarCollapsibleOnDesktop()
+            ->userMenuItems([
+                MenuItem::make('My Profile')
+                    ->url(fn(): string => route('filament.admin.auth.profile'))
+                    ->icon('heroicon-o-user-circle'),
+            ])
+            ->renderHook(
+                'panels::user-menu.before',
+                fn(): string => view('filament.user-role-badge', ['user' => Auth::user()])->render()
+            )
+            ->navigationItems([
+                NavigationItem::make('POS')
+                    ->url('/pos')
+                    ->icon('heroicon-o-shopping-cart')
+                    ->visible(fn(): bool => Auth::user()?->can('order.create')),
+            ])
             ->viteTheme('resources/css/app.css');
     }
 }

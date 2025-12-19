@@ -247,6 +247,51 @@
         </tbody>
     </table>
 
+    @if(isset($order) && $order->salesReturns->isNotEmpty())
+    <div style="margin-top: 5mm;">
+        <h3 style="font-size: 14px; margin-bottom: 2mm;">Returns Information</h3>
+        <table style="font-size: 12px;">
+            <thead>
+                <tr>
+                    <th>Return ID</th>
+                    <th>Date</th>
+                    <th>Reason</th>
+                    <th>Amount</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach($order->salesReturns as $return)
+                <tr>
+                    <td>#{{ str_pad($return->id, 6, '0', STR_PAD_LEFT) }}</td>
+                    <td>{{ $return->return_date->format('M d, Y') }}</td>
+                    <td>{{ $return->formatted_reason }}</td>
+                    <td>{{ $currency_symbol . number_format($return->total_refund_amount, 2) }}</td>
+                    <td>
+                        <span style="color:
+                            @if($return->status === 'pending') orange
+                            @elseif($return->status === 'approved') green
+                            @elseif($return->status === 'rejected') red
+                            @elseif($return->status === 'processed') blue
+                            @else purple
+                            @endif
+                        ;">
+                            {{ $return->formatted_status }}
+                        </span>
+                    </td>
+                </tr>
+                @endforeach
+            </tbody>
+        </table>
+        
+        @if($order->salesReturns->sum('total_refund_amount') > 0)
+        <div style="margin-top: 2mm; font-size: 12px;">
+            <strong>Total Returned Amount: {{ $currency_symbol . number_format($order->salesReturns->sum('total_refund_amount'), 2) }}</strong>
+        </div>
+        @endif
+    </div>
+    @endif
+
     <div class="invoice-footer">
         <p>Thank you for your purchase!</p>
     </div>

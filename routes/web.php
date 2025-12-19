@@ -23,15 +23,29 @@ Route::get('/', function () {
 
 
 Route::get('/install',  [InstallController::class, 'install']);
-Route::get('/print/{id}',  [UtilityController::class, 'print']);
+Route::get('/print/{id}', [UtilityController::class, 'print'])->name('utility.print-invoice');
+Route::get('/print-credit-note/{id}', [UtilityController::class, 'printCreditNote'])->name('utility.print-credit-note');
 Route::get('/login',  function(){
     return redirect( url('/admin') );
 })->name('login');
 
-Route::get('/clear',  function(){
+Route::get('/clear', function(){
     Artisan::call('optimize:clear');
     Artisan::call('cache:clear');
     Artisan::call('config:clear');
     Artisan::call('route:clear');
     Artisan::call('view:clear');
 });
+
+// Protected routes examples
+Route::get('/admin/users', function () {
+    return 'User Management - Protected Route';
+})->middleware(['auth', 'role:user.view']);
+
+Route::get('/admin/stock-adjustment', function () {
+    return 'Stock Adjustment - Protected Route';
+})->middleware(['auth', 'role:stock.adjust']);
+
+Route::get('/admin/reports', function () {
+    return 'Reports - Protected Route';
+})->middleware(['auth', 'role:report.view']);

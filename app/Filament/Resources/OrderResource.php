@@ -13,6 +13,8 @@ use App\Filament\Resources\OrderResource\Pages\EditOrder;
 use App\Filament\Resources\OrderResource\Pages;
 use App\Models\Order;
 use App\Models\Setting;
+use App\Models\SalesReturn;
+use App\Services\SalesReturnService;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -22,6 +24,7 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\Filter;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Forms\Components\DatePicker;
+use Filament\Actions\Action;
 use pxlrbt\FilamentExcel\Actions\Tables\ExportBulkAction;
 use pxlrbt\FilamentExcel\Exports\ExcelExport;
 use pxlrbt\FilamentExcel\Columns\Column;
@@ -50,15 +53,50 @@ class OrderResource extends Resource
         return $table
             ->columns([
                 TextColumn::make('id')->label('ID')->sortable(),
+                TextColumn::make('cashierShift.user.name')
+                            ->label('Cashier')
+                            ->formatStateUsing(fn ($record) => $record->cashierShift?->user?->name ?? '-')
+                            ->sortable()
+                            ->toggleable(),
                 TextColumn::make('customer.first_name')
                             ->label('Customer Name')
                             ->searchable()
-                            ->formatStateUsing(fn ($record) => $record->customer->first_name . ' ' . $record->customer->last_name),
+                            ->formatStateUsing(fn ($record) => $record->customer?->first_name . ' ' . $record->customer?->last_name ?? 'Walk-in Customer'),
                 TextColumn::make('total_price')
                             ->formatStateUsing(fn ($record) => $currency_symbol.$record->total_price)->sortable(),
                 TextColumn::make('payments.first.payment_method')
                             ->label('Payment Method')
                             ->formatStateUsing(fn ($state) => $state ? ucfirst($state) : '-')
+                            ->sortable(),
+                TextColumn::make('returns_count')
+                            ->label('Returns')
+                            ->counts('salesReturns')
+                            ->sortable()
+                            ->color('warning')
+                            ->toggleable(),
+                TextColumn::make('total_returned_amount')
+                            ->label('Returned Amount')
+                            ->getStateUsing(fn ($record) => $currency_symbol . $record->salesReturns->sum('total_refund_amount'))
+                            ->sortable()
+                            ->toggleable(),
+                TextColumn::make('status')
+                            ->badge()
+                            ->color(fn (string $state): string => match ($state) {
+                                'pending' => 'warning',
+                                'completed' => 'success',
+                                'cancelled' => 'danger',
+                                'refunded' => 'info',
+                                default => 'gray',
+                            })
+                            ->formatStateUsing(fn (string $state): string =>
+                                match($state) {
+                                    'pending' => 'Pending',
+                                    'completed' => 'Completed',
+                                    'cancelled' => 'Cancelled',
+                                    'refunded' => 'Refunded',
+                                    default => ucfirst($state),
+                                }
+                            )
                             ->sortable(),
                 TextColumn::make('created_at')->sortable()->dateTime(),
             ])
@@ -104,10 +142,54 @@ class OrderResource extends Resource
                                 });
                             });
                     }),
+                SelectFilter::make('status')
+                    ->label('Order Status')
+                    ->options([
+                        'pending' => 'Pending',
+                        'completed' => 'Completed',
+                        'cancelled' => 'Cancelled',
+                        'refunded' => 'Refunded',
+                    ])
+                    ->query(function ($query, array $data) {
+                        return $query->when($data['value'] ?? null, fn ($query, $status) => $query->where('status', $status));
+                    }),
+                SelectFilter::make('cashier')
+                    ->label('Cashier')
+                    ->options(function () {
+                        return \App\Models\User::whereHas('cashierShifts')->pluck('name', 'id')->toArray();
+                    })
+                    ->query(function ($query, array $data) {
+                        return $query
+                            ->when($data['value'] ?? null, function ($query, $cashierId) {
+                                $query->whereHas('cashierShift', function ($query) use ($cashierId) {
+                                    $query->where('user_id', $cashierId);
+                                });
+                            });
+                    }),
             ])
             ->recordActions([
-                EditAction::make(),
-                DeleteAction::make(),
+                EditAction::make()
+                    ->visible(fn ($record) => auth()->user()->can('order.edit')),
+                DeleteAction::make()
+                    ->visible(fn ($record) => auth()->user()->can('order.delete')),
+                Action::make('create_return')
+                    ->label('Create Return')
+                    ->icon('heroicon-o-arrow-uturn-left')
+                    ->color('warning')
+                    ->url(fn ($record) => route('filament.admin.resources.sales-returns.create', ['order_id' => $record->id]))
+                    ->visible(fn ($record) => auth()->user()->can('returns.create') && app(SalesReturnService::class)->isOrderEligibleForReturn($record)),
+                Action::make('view_returns')
+                    ->label('View Returns')
+                    ->icon('heroicon-o-arrow-uturn-left')
+                    ->color('info')
+                    ->url(fn ($record) => route('filament.admin.resources.sales-returns.index', ['order_id' => $record->id]))
+                    ->visible(fn ($record) => auth()->user()->can('returns.view') && $record->salesReturns->count() > 0),
+                Action::make('view_shift')
+                    ->label('View Shift')
+                    ->icon('heroicon-o-clock')
+                    ->color('success')
+                    ->url(fn ($record) => $record->cashierShift ? route('filament.admin.resources.cashier-shifts.view', $record->cashierShift->id) : null)
+                    ->visible(fn ($record) => auth()->user()->can('shift.view') && $record->cashierShift),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([
@@ -136,7 +218,7 @@ class OrderResource extends Resource
     public static function getRelations(): array
     {
         return [
-            //
+            \App\Filament\Resources\OrderResource\RelationManagers\SalesReturnsRelationManager::class,
         ];
     }
 

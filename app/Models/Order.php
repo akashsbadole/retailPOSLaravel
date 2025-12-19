@@ -8,6 +8,7 @@ class Order extends Model
 {
     protected $fillable = [
         'customer_id',
+        'cashier_shift_id',
         'total_price',
         'discount_amount',
         'status',
@@ -48,9 +49,19 @@ class Order extends Model
         return $this->hasMany(Payment::class);
     }
 
+    public function salesReturns()
+    {
+        return $this->hasMany(SalesReturn::class);
+    }
+
     public function customer()
     {
         return $this->belongsTo(Customer::class);
+    }
+
+    public function cashierShift()
+    {
+        return $this->belongsTo(\App\Models\CashierShift::class);
     }
 
     public function getCustomerName()

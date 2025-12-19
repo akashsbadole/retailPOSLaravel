@@ -49,7 +49,8 @@ class OrdersRelationManager extends RelationManager
                 CreateAction::make(),
             ])
             ->recordActions([
-                Action::make('Edit')
+                Action::make('edit_order')
+                ->label('Edit')
                 ->url(fn (Order $record) => route('filament.admin.resources.orders.edit', ['record' => $record->id])),
                 DeleteAction::make(),
             ])

@@ -59,7 +59,9 @@ class ProductResource extends Resource
                         ->label('Cost Price')
                         ->numeric()
                         ->step(0.01)
-                        ->nullable(),
+                        ->nullable()
+                        ->visible(fn () => auth()->user()->can('product.view-cost'))
+                        ->helperText('Only visible to users with cost price permission'),
                     TextInput::make('quantity')
                         ->numeric()
                         ->minValue(0)
@@ -122,7 +124,11 @@ class ProductResource extends Resource
                                 ->width(10)
                                 ->alignCenter(),
                 TextColumn::make('price')->label('Selling Price')->sortable(),
-                TextColumn::make('cost_price')->label('Cost Price')->sortable(),
+                TextColumn::make('cost_price')
+                    ->label('Cost Price')
+                    ->sortable()
+                    ->visible(fn () => auth()->user()->can('product.view-cost'))
+                    ->formatStateUsing(fn ($state) => $state ? '$' . number_format($state, 2) : 'N/A'),
                 TextColumn::make('stock_status')
                                 ->label('Stock Status')
                                 ->badge()
@@ -142,11 +148,30 @@ class ProductResource extends Resource
                 //
             ])
             ->recordActions([
-                EditAction::make(),
+                EditAction::make()
+                    ->visible(fn (): bool => auth()->user()->can('product.edit')),
+                
+                Tables\Actions\DeleteAction::make()
+                    ->visible(fn (): bool => auth()->user()->can('product.delete')),
+                
+                Tables\Actions\Action::make('stock_adjustment')
+                    ->label('Adjust Stock')
+                    ->icon('heroicon-o-arrow-path-rounded-square')
+                    ->color('warning')
+                    ->url(fn ($record): string => route('filament.admin.resources.stock-adjustments.create', ['product_id' => $record->id]))
+                    ->visible(fn (): bool => auth()->user()->can('stock.adjust')),
+                    
+                Tables\Actions\Action::make('view_history')
+                    ->label('Stock History')
+                    ->icon('heroicon-o-clock')
+                    ->color('info')
+                    ->url(fn ($record): string => route('filament.admin.resources.stock-adjustments.index', ['product_id' => $record->id]))
+                    ->visible(fn (): bool => auth()->user()->can('stock.view')),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([
-                    DeleteBulkAction::make(),
+                    DeleteBulkAction::make()
+                        ->visible(fn (): bool => auth()->user()->can('product.delete')),
                 ]),
                 ExportBulkAction::make()->exports([
                     ExcelExport::make()
@@ -157,7 +182,9 @@ class ProductResource extends Resource
                             Column::make('barcode')->heading('Barcode'),
                             Column::make('sku')->heading('SKU'),
                             Column::make('price')->heading('Selling Price'),
-                            Column::make('cost_price')->heading('Cost Price'),
+                            Column::make('cost_price')
+                                ->heading('Cost Price')
+                                ->visible(fn () => auth()->user()->can('product.view-cost')),
                             Column::make('tax')->heading('Tax'),
                             Column::make('quantity')->heading('Quantity'),
                         ])
@@ -165,19 +192,45 @@ class ProductResource extends Resource
             ]);
     }
 
-    public static function getRelations(): array
-    {
-        return [
-            //
-        ];
-    }
 
     public static function getPages(): array
     {
         return [
             'index' => ListProducts::route('/'),
-            // 'create' => Pages\CreateProduct::route('/create'),
-            // 'edit' => Pages\EditProduct::route('/{record}/edit'),
+            'create' => Pages\CreateProduct::route('/create'),
+            'edit' => Pages\EditProduct::route('/{record}/edit'),
+        ];
+    }
+
+    public static function canViewAny(): bool
+    {
+        return auth()->user()?->can('product.view') ?? false;
+    }
+
+    public static function canCreate(): bool
+    {
+        return auth()->user()?->can('product.create') ?? false;
+    }
+
+    public static function canEdit($record): bool
+    {
+        return auth()->user()?->can('product.edit') ?? false;
+    }
+
+    public static function canDelete($record): bool
+    {
+        return auth()->user()?->can('product.delete') ?? false;
+    }
+
+    public static function canDeleteAny(): bool
+    {
+        return auth()->user()?->can('product.delete') ?? false;
+    }
+
+    public static function getRelations(): array
+    {
+        return [
+            //
         ];
     }
 }

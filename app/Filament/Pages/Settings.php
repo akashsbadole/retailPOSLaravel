@@ -34,6 +34,21 @@ class Settings extends Page
         $this->settings['payment_upi_enabled'] = $this->settings['payment_upi_enabled'] ?? '1';
         $this->settings['low_stock_alerts_enabled'] = $this->settings['low_stock_alerts_enabled'] ?? '1';
         $this->settings['default_minimum_stock'] = $this->settings['default_minimum_stock'] ?? '10';
+        
+        // Return settings
+        $this->settings['return_require_approval'] = $this->settings['return_require_approval'] ?? '1';
+        $this->settings['return_time_limit_days'] = $this->settings['return_time_limit_days'] ?? '30';
+        $this->settings['return_restocking_fee_percentage'] = $this->settings['return_restocking_fee_percentage'] ?? '0.00';
+        $this->settings['return_auto_stock_adjustment'] = $this->settings['return_auto_stock_adjustment'] ?? '1';
+        $this->settings['return_reasons'] = $this->settings['return_reasons'] ?? json_encode([
+            'damaged' => 'Damaged',
+            'defective' => 'Defective',
+            'wrong_item' => 'Wrong Item',
+            'not_needed' => 'Not Needed',
+            'customer_dissatisfaction' => 'Customer Dissatisfaction',
+            'expired' => 'Expired',
+            'other' => 'Other',
+        ]);
     }
 
     public function save(): void
@@ -119,6 +134,34 @@ class Settings extends Page
                 ->minValue(1)
                 ->default(10)
                 ->helperText('Default minimum stock level for new products'),
+            
+            // Return Settings Group
+            Toggle::make('settings.return_require_approval')
+                ->label('Require Return Approval')
+                ->helperText('Require manager approval before processing returns')
+                ->default(true),
+            
+            TextInput::make('settings.return_time_limit_days')
+                ->label('Return Time Limit (Days)')
+                ->numeric()
+                ->minValue(1)
+                ->default(30)
+                ->helperText('Number of days after purchase when returns are allowed'),
+            
+            TextInput::make('settings.return_restocking_fee_percentage')
+                ->label('Restocking Fee (%)')
+                ->numeric()
+                ->step(0.01)
+                ->minValue(0)
+                ->maxValue(100)
+                ->suffix('%')
+                ->default('0.00')
+                ->helperText('Percentage to deduct from refund amount for restocking'),
+            
+            Toggle::make('settings.return_auto_stock_adjustment')
+                ->label('Auto Stock Adjustment')
+                ->helperText('Automatically adjust stock when returns are approved')
+                ->default(true),
             
             // Company Information Group
             TextInput::make('settings.company_name')

@@ -11,9 +11,18 @@ class Payment extends Model
         'order_id',
         'user_id',
         'payment_method',
+        'cashier_shift_id',
     ];
 
     protected $casts = [
         'payment_method' => 'string',
     ];
+
+    /**
+     * Get the cashier shift that owns the payment.
+     */
+    public function cashierShift()
+    {
+        return $this->belongsTo(CashierShift::class);
+    }
 }

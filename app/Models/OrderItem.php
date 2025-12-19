@@ -31,4 +31,9 @@ class OrderItem extends Model
     {
         return $this->belongsTo(Order::class);
     }
+
+    public function salesReturnItems()
+    {
+        return $this->hasMany(SalesReturnItem::class);
+    }
 }
