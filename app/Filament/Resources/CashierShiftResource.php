@@ -32,7 +32,9 @@ class CashierShiftResource extends Resource
 {
     protected static ?string $model = CashierShift::class;
 
-    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-clock';
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-clock';
+
+    // protected static ?string $navigationGroup = 'Shift Management';
 
     protected static ?string $navigationLabel = 'Cashier Shifts';
 
@@ -54,9 +56,9 @@ class CashierShiftResource extends Resource
                                 ->label('Cashier')
                                 ->relationship('user', 'name')
                                 ->searchable()
-                                ->default(fn () => Auth::id())
+                                ->default(fn() => Auth::id())
                                 ->required()
-                                ->disabled(fn ($context) => $context === 'edit'),
+                                ->disabled(fn($context) => $context === 'edit'),
 
                             Select::make('status')
                                 ->label('Status')
@@ -66,7 +68,7 @@ class CashierShiftResource extends Resource
                                 ])
                                 ->required()
                                 ->default('open')
-                                ->disabled(fn ($context) => $context === 'edit'),
+                                ->disabled(fn($context) => $context === 'edit'),
                         ]),
 
                         Grid::make(2)->schema([
@@ -74,11 +76,11 @@ class CashierShiftResource extends Resource
                                 ->label('Start Time')
                                 ->required()
                                 ->default(now())
-                                ->disabled(fn ($context) => $context === 'edit'),
+                                ->disabled(fn($context) => $context === 'edit'),
 
                             DateTimePicker::make('end_time')
                                 ->label('End Time')
-                                ->disabled(fn ($context) => $context === 'edit'),
+                                ->disabled(fn($context) => $context === 'edit'),
                         ]),
 
                         Grid::make(2)->schema([
@@ -173,24 +175,24 @@ class CashierShiftResource extends Resource
                     ->label('Cashier')
                     ->searchable()
                     ->sortable()
-                    ->description(fn ($record): string => $record->user->email ?? ''),
+                    ->description(fn($record): string => $record->user->email ?? ''),
 
                 TextColumn::make('start_time')
                     ->label('Start Time')
                     ->dateTime('M j, Y g:i A')
                     ->sortable()
-                    ->description(fn ($record): string => $record->start_time->diffForHumans()),
+                    ->description(fn($record): string => $record->start_time->diffForHumans()),
 
                 TextColumn::make('end_time')
                     ->label('End Time')
                     ->dateTime('M j, Y g:i A')
                     ->sortable()
                     ->placeholder('Still Open')
-                    ->description(fn ($record): string => $record->end_time ? $record->end_time->diffForHumans() : ''),
+                    ->description(fn($record): string => $record->end_time ? $record->end_time->diffForHumans() : ''),
 
                 TextColumn::make('duration')
                     ->label('Duration')
-                    ->getStateUsing(fn ($record): string => $record->duration)
+                    ->getStateUsing(fn($record): string => $record->duration)
                     ->sortable(false),
 
                 IconColumn::make('status')
@@ -200,7 +202,7 @@ class CashierShiftResource extends Resource
                     ->falseLabel('Open')
                     ->trueIcon('heroicon-o-check-circle')
                     ->falseIcon('heroicon-o-clock')
-                    ->color(fn ($record): string => $record->status === 'closed' ? 'success' : 'warning'),
+                    ->color(fn($record): string => $record->status === 'closed' ? 'success' : 'warning'),
 
                 TextColumn::make('total_sales')
                     ->label('Total Sales')
@@ -211,8 +213,8 @@ class CashierShiftResource extends Resource
                 TextColumn::make('cash_discrepancy')
                     ->label('Cash Discrepancy')
                     ->money('INR')
-                    ->getStateUsing(fn ($record): float => $record->cash_discrepancy)
-                    ->color(fn ($record): string => $record->cash_discrepancy === 0 ? 'success' : 'danger')
+                    ->getStateUsing(fn($record): float => $record->cash_discrepancy)
+                    ->color(fn($record): string => $record->cash_discrepancy === 0 ? 'success' : 'danger')
                     ->sortable(false),
             ])
             ->filters([
@@ -224,7 +226,7 @@ class CashierShiftResource extends Resource
 
                 Tables\Filters\SelectFilter::make('user_id')
                     ->label('Cashier')
-                    ->options(fn () => User::whereHas('cashierShifts')->pluck('name', 'id')),
+                    ->options(fn() => User::whereHas('cashierShifts')->pluck('name', 'id')),
 
                 Tables\Filters\Filter::make('start_time')
                     ->form([
@@ -237,23 +239,23 @@ class CashierShiftResource extends Resource
                         return $query
                             ->when(
                                 $data['start_from'],
-                                fn (Builder $query, $date): Builder => $query->whereDate('start_time', '>=', $date),
+                                fn(Builder $query, $date): Builder => $query->whereDate('start_time', '>=', $date),
                             )
                             ->when(
                                 $data['start_until'],
-                                fn (Builder $query, $date): Builder => $query->whereDate('start_time', '<=', $date),
+                                fn(Builder $query, $date): Builder => $query->whereDate('start_time', '<=', $date),
                             );
                     }),
             ])
             ->actions([
                 Tables\Actions\ViewAction::make(),
                 Tables\Actions\EditAction::make()
-                    ->visible(fn ($record): bool => $record->isOpen() && auth()->user()->can('cashier-shift.edit')),
+                    ->visible(fn($record): bool => $record->isOpen() && auth()->user()->can('cashier-shift.edit')),
                 Action::make('close_shift_from_table')
                     ->label('Close Shift')
                     ->icon('heroicon-o-check-circle')
                     ->color('success')
-                    ->visible(fn ($record): bool => $record->isOpen() && auth()->user()->can('cashier-shift.close'))
+                    ->visible(fn($record): bool => $record->isOpen() && auth()->user()->can('cashier-shift.close'))
                     ->form([
                         TextInput::make('closing_cash')
                             ->label('Closing Cash (₹)')
@@ -279,12 +281,12 @@ class CashierShiftResource extends Resource
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make()
-                        ->visible(fn (): bool => auth()->user()->can('cashier-shift.delete')),
+                        ->visible(fn(): bool => auth()->user()->can('cashier-shift.delete')),
                 ]),
             ])
             ->emptyStateActions([
                 Tables\Actions\CreateAction::make()
-                    ->visible(fn (): bool => auth()->user()->can('cashier-shift.create')),
+                    ->visible(fn(): bool => auth()->user()->can('cashier-shift.create')),
             ]);
     }
 

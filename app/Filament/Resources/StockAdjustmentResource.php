@@ -32,7 +32,9 @@ class StockAdjustmentResource extends Resource
 {
     protected static ?string $model = StockAdjustment::class;
 
-    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-arrow-path-rounded-square';
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-arrow-path-rounded-square';
+
+    protected static string|\UnitEnum|null $navigationGroup = 'Inventory';
 
     protected static ?string $navigationLabel = 'Stock Adjustments';
 
@@ -106,8 +108,8 @@ class StockAdjustmentResource extends Resource
                                 ->default(1)
                                 ->helperText(function (callable $get) {
                                     $type = $get('adjustment_type');
-                                    return $type === 'decrease' 
-                                        ? 'This quantity will be deducted from current stock' 
+                                    return $type === 'decrease'
+                                        ? 'This quantity will be deducted from current stock'
                                         : 'This quantity will be added to current stock';
                                 }),
                         ]),
@@ -152,21 +154,21 @@ class StockAdjustmentResource extends Resource
                                         $productId = $get('product_id');
                                         $quantity = $get('quantity');
                                         $type = $get('adjustment_type');
-                                        
+
                                         if (!$productId || !$quantity || !$type) {
                                             return 'Select product and adjustment details to see preview';
                                         }
-                                        
+
                                         $product = Product::find($productId);
                                         if (!$product) {
                                             return 'Product not found';
                                         }
-                                        
+
                                         $currentStock = $product->quantity;
-                                        $newStock = $type === 'increase' 
-                                            ? $currentStock + $quantity 
+                                        $newStock = $type === 'increase'
+                                            ? $currentStock + $quantity
                                             : $currentStock - $quantity;
-                                        
+
                                         return "Current: {$currentStock} → New: {$newStock} (" . ($type === 'increase' ? '+' : '-') . "{$quantity})";
                                     }),
                             ])
@@ -183,29 +185,29 @@ class StockAdjustmentResource extends Resource
                     ->label('Date')
                     ->dateTime('M j, Y g:i A')
                     ->sortable()
-                    ->description(fn ($record): string => $record->created_at->diffForHumans()),
+                    ->description(fn($record): string => $record->created_at->diffForHumans()),
 
                 TextColumn::make('product.name')
                     ->label('Product')
                     ->searchable()
                     ->sortable()
-                    ->description(fn ($record): string => "SKU: " . ($record->product->sku ?? 'N/A')),
+                    ->description(fn($record): string => "SKU: " . ($record->product->sku ?? 'N/A')),
 
                 TextColumn::make('quantity_with_sign')
                     ->label('Quantity')
                     ->badge()
-                    ->color(fn ($record): string => $record->adjustment_type === 'increase' ? 'success' : 'danger')
+                    ->color(fn($record): string => $record->adjustment_type === 'increase' ? 'success' : 'danger')
                     ->sortable(),
 
                 TextColumn::make('adjustment_type')
                     ->label('Type')
                     ->badge()
-                    ->color(fn ($record): string => $record->adjustment_type === 'increase' ? 'success' : 'danger'),
+                    ->color(fn($record): string => $record->adjustment_type === 'increase' ? 'success' : 'danger'),
 
                 TextColumn::make('formatted_reason')
                     ->label('Reason')
                     ->badge()
-                    ->color(fn ($record): string => match($record->reason) {
+                    ->color(fn($record): string => match ($record->reason) {
                         'damage' => 'warning',
                         'theft' => 'danger',
                         'manual_correction' => 'info',
@@ -231,7 +233,7 @@ class StockAdjustmentResource extends Resource
                 TextColumn::make('user.name')
                     ->label('Created By')
                     ->sortable()
-                    ->description(fn ($record): string => $record->created_at->format('M j, Y')),
+                    ->description(fn($record): string => $record->created_at->format('M j, Y')),
             ])
             ->filters([
                 Tables\Filters\SelectFilter::make('adjustment_type')
@@ -265,25 +267,25 @@ class StockAdjustmentResource extends Resource
                         return $query
                             ->when(
                                 $data['created_from'],
-                                fn (Builder $query, $date): Builder => $query->whereDate('created_at', '>=', $date),
+                                fn(Builder $query, $date): Builder => $query->whereDate('created_at', '>=', $date),
                             )
                             ->when(
                                 $data['created_until'],
-                                fn (Builder $query, $date): Builder => $query->whereDate('created_at', '<=', $date),
+                                fn(Builder $query, $date): Builder => $query->whereDate('created_at', '<=', $date),
                             );
                     }),
             ])
             ->actions([
                 Tables\Actions\ViewAction::make(),
                 Tables\Actions\EditAction::make()
-                    ->visible(fn ($record): bool => !$record->approved && auth()->user()->can('stock-adjustment.edit')),
+                    ->visible(fn($record): bool => !$record->approved && auth()->user()->can('stock-adjustment.edit')),
                 Tables\Actions\DeleteAction::make()
-                    ->visible(fn ($record): bool => !$record->approved && auth()->user()->can('stock-adjustment.delete')),
+                    ->visible(fn($record): bool => !$record->approved && auth()->user()->can('stock-adjustment.delete')),
                 Action::make('approve')
                     ->label('Approve')
                     ->icon('heroicon-o-check-circle')
                     ->color('success')
-                    ->visible(fn ($record): bool => !$record->approved && auth()->user()->can('stock-adjustment.approve'))
+                    ->visible(fn($record): bool => !$record->approved && auth()->user()->can('stock-adjustment.approve'))
                     ->action(function (StockAdjustment $record) {
                         $record->approve();
                         Notification::make()
@@ -296,12 +298,12 @@ class StockAdjustmentResource extends Resource
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make()
-                        ->visible(fn (): bool => auth()->user()->can('stock-adjustment.delete')),
+                        ->visible(fn(): bool => auth()->user()->can('stock-adjustment.delete')),
                     Tables\Actions\BulkAction::make('approve')
                         ->label('Approve Selected')
                         ->icon('heroicon-o-check-circle')
                         ->color('success')
-                        ->visible(fn (): bool => auth()->user()->can('stock-adjustment.approve'))
+                        ->visible(fn(): bool => auth()->user()->can('stock-adjustment.approve'))
                         ->action(function ($records) {
                             foreach ($records as $record) {
                                 if (!$record->approved) {
@@ -319,7 +321,7 @@ class StockAdjustmentResource extends Resource
             ])
             ->emptyStateActions([
                 Tables\Actions\CreateAction::make()
-                    ->visible(fn (): bool => auth()->user()->can('stock-adjustment.create')),
+                    ->visible(fn(): bool => auth()->user()->can('stock-adjustment.create')),
             ]);
     }
 

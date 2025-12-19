@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Support\Facades\Storage;
 
 class Product extends Model
@@ -265,4 +266,206 @@ class Product extends Model
         return $this->salesReturnItems()->latest()->first();
     }
 
+    /**
+     * Boot the model
+     */
+    protected static function booted()
+    {
+        static::creating(function ($product) {
+            // Auto-generate barcode if enabled and barcode is empty
+            if (config('settings.auto_generate_barcodes', true) && empty($product->barcode)) {
+                $barcodeService = app(\App\Services\BarcodeService::class);
+                $prefix = config('settings.barcode_prefix', 'PROD');
+                $product->barcode = $barcodeService->generateUniqueBarcode($prefix);
+            }
+        });
+
+        static::updating(function ($product) {
+            // Validate barcode uniqueness if enabled
+            if (config('settings.require_unique_barcodes', true) && $product->isDirty('barcode')) {
+                $existingProduct = static::where('barcode', $product->barcode)
+                    ->where('id', '!=', $product->id)
+                    ->first();
+                
+                if ($existingProduct) {
+                    throw new \Exception("Barcode '{$product->barcode}' already exists for another product.");
+                }
+            }
+        });
+    }
+
+    /**
+     * Get barcode URL for display
+     */
+    public function getBarcodeUrlAttribute()
+    {
+        if (!$this->barcode) {
+            return null;
+        }
+
+        $barcodeService = app(\App\Services\BarcodeService::class);
+        return 'data:image/png;base64,' . base64_encode($barcodeService->generatePng($this->barcode));
+    }
+
+    /**
+     * Get barcode HTML for display
+     */
+    public function getBarcodeHtmlAttribute()
+    {
+        if (!$this->barcode) {
+            return null;
+        }
+
+        $barcodeService = app(\App\Services\BarcodeService::class);
+        return $barcodeService->generateHtml($this->barcode);
+    }
+
+    /**
+     * Check if product has a valid barcode
+     */
+    public function hasValidBarcode(): bool
+    {
+        if (empty($this->barcode)) {
+            return false;
+        }
+
+        $barcodeService = app(\App\Services\BarcodeService::class);
+        return $barcodeService->validateBarcode($this->barcode);
+    }
+
+    /**
+     * Scope to find products by barcode or SKU
+     */
+    public function scopeByBarcodeOrSku($query, $barcode)
+    {
+        return $query->where(function ($q) use ($barcode) {
+            $q->where('barcode', $barcode)
+              ->orWhere('sku', $barcode);
+        });
+    }
+
+    /**
+     * Scope to get products without barcodes
+     */
+    public function scopeWithoutBarcode($query)
+    {
+        return $query->where(function ($q) {
+            $q->whereNull('barcode')
+              ->orWhere('barcode', '');
+        });
+    }
+
+    /**
+     * Scope to get products with barcodes
+     */
+    public function scopeWithBarcode($query)
+    {
+        return $query->whereNotNull('barcode')
+                    ->where('barcode', '!=', '');
+    }
+
+    /**
+     * Generate barcode for this product
+     */
+    public function generateBarcode(string $prefix = null): string
+    {
+        $barcodeService = app(\App\Services\BarcodeService::class);
+        $prefix = $prefix ?? config('settings.barcode_prefix', 'PROD');
+        
+        $barcode = $barcodeService->generateUniqueBarcode($prefix);
+        $this->update(['barcode' => $barcode]);
+        
+        return $barcode;
+    }
+
+    /**
+     * Regenerate barcode for this product
+     */
+    public function regenerateBarcode(string $prefix = null): string
+    {
+        return $this->generateBarcode($prefix);
+    }
+
+    /**
+     * Get barcode label data for printing
+     */
+    public function getBarcodeLabelData(): array
+    {
+        $barcodeService = app(\App\Services\BarcodeService::class);
+        
+        return [
+            'product' => $this,
+            'barcode_html' => $barcodeService->generateHtml($this->barcode),
+            'product_name' => $this->name,
+            'price' => number_format($this->price, 2),
+            'barcode' => $this->barcode,
+            'sku' => $this->sku,
+        ];
+    }
+
+    /**
+     * Get the stores that have this product in stock.
+     */
+    public function stores(): BelongsToMany
+    {
+        return $this->belongsToMany(Store::class, 'store_stocks')
+            ->withPivot('quantity', 'minimum_stock', 'location')
+            ->withTimestamps();
+    }
+
+    /**
+     * Get the store stocks for this product.
+     */
+    public function storeStocks()
+    {
+        return $this->hasMany(StoreStock::class);
+    }
+
+    /**
+     * Get stock quantity for a specific store.
+     */
+    public function getStockForStore(int $storeId): int
+    {
+        $storeStock = $this->storeStocks()->where('store_id', $storeId)->first();
+        return $storeStock ? $storeStock->quantity : 0;
+    }
+
+    /**
+     * Check if product is in stock for a specific store.
+     */
+    public function isInStockForStore(int $storeId): bool
+    {
+        return $this->getStockForStore($storeId) > 0;
+    }
+
+    /**
+     * Check if product has low stock for a specific store.
+     */
+    public function isLowStockForStore(int $storeId): bool
+    {
+        $storeStock = $this->storeStocks()->where('store_id', $storeId)->first();
+        if (!$storeStock) {
+            return true; // No stock means it's "low"
+        }
+        
+        return $storeStock->quantity > 0 && $storeStock->quantity <= $storeStock->minimum_stock;
+    }
+
+    /**
+     * Get total stock across all stores.
+     */
+    public function getTotalStockAttribute(): int
+    {
+        return $this->storeStocks()->sum('quantity');
+    }
+
+    /**
+     * Get total stock value across all stores.
+     */
+    public function getTotalStockValueAttribute(): float
+    {
+        return $this->storeStocks()->get()->sum(function ($storeStock) {
+            return $storeStock->quantity * $this->cost_price;
+        });
+    }
 }

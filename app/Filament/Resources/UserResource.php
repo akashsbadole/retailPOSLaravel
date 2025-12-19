@@ -24,7 +24,7 @@ class UserResource extends Resource
 
     protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-users';
 
-    protected static string | \UnitEnum | null $navigationGroup = 'User Management';
+    protected static string|\UnitEnum|null $navigationGroup = 'User Management';
 
     protected static ?int $navigationSort = 1;
 
@@ -123,7 +123,12 @@ class UserResource extends Resource
 
     public static function canViewAny(): bool
     {
-        return auth()->user()->can('user.view');
+        // Allow route registration during boot, but enforce permissions during runtime
+        if (!app()->bound('filament')) {
+            return true;
+        }
+        
+        return auth()->user()?->can('user.view') ?? false;
     }
 
     public static function canCreate(): bool

@@ -2,6 +2,8 @@
 
 use App\Http\Controllers\UtilityController;
 use App\Http\Controllers\InstallController;
+use App\Http\Controllers\StoreController;
+use App\Http\Controllers\MobilePosController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Artisan;
 
@@ -49,3 +51,12 @@ Route::get('/admin/stock-adjustment', function () {
 Route::get('/admin/reports', function () {
     return 'Reports - Protected Route';
 })->middleware(['auth', 'role:report.view']);
+
+// Store switching route
+Route::post('/admin/stores/switch', [StoreController::class, 'switch'])->name('filament.admin.stores.switch')->middleware('auth');
+
+// Mobile POS Routes
+Route::prefix('mobile-pos')->group(function () {
+    Route::get('/login', [MobilePosController::class, 'login'])->name('mobile-pos.login');
+    Route::get('/', [MobilePosController::class, 'index'])->name('mobile-pos.index')->middleware('auth');
+});

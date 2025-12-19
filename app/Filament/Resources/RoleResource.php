@@ -21,6 +21,8 @@ class RoleResource extends Resource
 {
     protected static ?string $model = Role::class;
 
+    protected static string|\UnitEnum|null $navigationGroup = 'User Management';
+
     protected static ?int $navigationSort = 3;
 
     public static function form(Schema $schema): Schema
@@ -33,7 +35,7 @@ class RoleResource extends Resource
                     ->label('Role Name')
                     ->default('')
                     ->nullable(false),
-                
+
                 CheckboxList::make('permissions')
                     ->relationship('permissions', 'name')
                     ->label('Permissions')
@@ -50,12 +52,12 @@ class RoleResource extends Resource
                 TextColumn::make('name')
                     ->searchable()
                     ->sortable(),
-                
+
                 TextColumn::make('permissions_count')
                     ->label('Permissions')
                     ->counts('permissions')
                     ->sortable(),
-                
+
                 TextColumn::make('users_count')
                     ->label('Users')
                     ->counts('users')

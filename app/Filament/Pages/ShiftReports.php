@@ -19,7 +19,9 @@ use Illuminate\Support\Facades\DB;
 
 class ShiftReports extends Page
 {
-    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-chart-bar';
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-chart-bar';
+
+    // protected static string|\UnitEnum|null $navigationGroup = 'Reports';
 
     protected string $view = 'filament.pages.shift-reports';
 
@@ -60,7 +62,8 @@ class ShiftReports extends Page
                             ])
                             ->default('today')
                             ->reactive()
-                            ->afterStateUpdated(fn ($state, callable $set) => 
+                            ->afterStateUpdated(
+                                fn($state, callable $set) =>
                                 $set('custom_date_range', $state === 'custom' ? now()->format('Y-m-d') : null)
                             ),
 
@@ -74,13 +77,13 @@ class ShiftReports extends Page
                     Forms\Components\Grid::make(2)->schema([
                         Forms\Components\DatePicker::make('start_date')
                             ->label('Start Date')
-                            ->visible(fn (callable $get) => $get('date_range') === 'custom')
-                            ->required(fn (callable $get) => $get('date_range') === 'custom'),
+                            ->visible(fn(callable $get) => $get('date_range') === 'custom')
+                            ->required(fn(callable $get) => $get('date_range') === 'custom'),
 
                         Forms\Components\DatePicker::make('end_date')
                             ->label('End Date')
-                            ->visible(fn (callable $get) => $get('date_range') === 'custom')
-                            ->required(fn (callable $get) => $get('date_range') === 'custom'),
+                            ->visible(fn(callable $get) => $get('date_range') === 'custom')
+                            ->required(fn(callable $get) => $get('date_range') === 'custom'),
                     ]),
 
                     Forms\Components\Select::make('status')
@@ -106,24 +109,24 @@ class ShiftReports extends Page
                     ->label('Cashier')
                     ->searchable()
                     ->sortable()
-                    ->description(fn ($record): string => $record->user->email ?? ''),
+                    ->description(fn($record): string => $record->user->email ?? ''),
 
                 TextColumn::make('start_time')
                     ->label('Start Time')
                     ->dateTime('M j, Y g:i A')
                     ->sortable()
-                    ->description(fn ($record): string => $record->start_time->diffForHumans()),
+                    ->description(fn($record): string => $record->start_time->diffForHumans()),
 
                 TextColumn::make('end_time')
                     ->label('End Time')
                     ->dateTime('M j, Y g:i A')
                     ->sortable()
                     ->placeholder('Still Open')
-                    ->description(fn ($record): string => $record->end_time ? $record->end_time->diffForHumans() : ''),
+                    ->description(fn($record): string => $record->end_time ? $record->end_time->diffForHumans() : ''),
 
                 TextColumn::make('duration')
                     ->label('Duration')
-                    ->getStateUsing(fn ($record): string => $record->duration)
+                    ->getStateUsing(fn($record): string => $record->duration)
                     ->sortable(false),
 
                 IconColumn::make('status')
@@ -133,7 +136,7 @@ class ShiftReports extends Page
                     ->falseLabel('Open')
                     ->trueIcon('heroicon-o-check-circle')
                     ->falseIcon('heroicon-o-clock')
-                    ->color(fn ($record): string => $record->status === 'closed' ? 'success' : 'warning'),
+                    ->color(fn($record): string => $record->status === 'closed' ? 'success' : 'warning'),
 
                 TextColumn::make('total_sales')
                     ->label('Total Sales')
@@ -150,13 +153,13 @@ class ShiftReports extends Page
                 TextColumn::make('cash_discrepancy')
                     ->label('Cash Discrepancy')
                     ->money('INR')
-                    ->getStateUsing(fn ($record): float => $record->cash_discrepancy)
-                    ->color(fn ($record): string => $record->cash_discrepancy === 0 ? 'success' : 'danger')
+                    ->getStateUsing(fn($record): float => $record->cash_discrepancy)
+                    ->color(fn($record): string => $record->cash_discrepancy === 0 ? 'success' : 'danger')
                     ->sortable(false),
 
                 TextColumn::make('orders_count')
                     ->label('Orders')
-                    ->getStateUsing(fn ($record): int => $record->orders()->count())
+                    ->getStateUsing(fn($record): int => $record->orders()->count())
                     ->sortable()
                     ->summarize(Sum::make()),
             ])
@@ -169,7 +172,7 @@ class ShiftReports extends Page
             ])
             ->actions([
                 Tables\Actions\ViewAction::make()
-                    ->url(fn ($record): string => route('filament.admin.resources.cashier-shifts.view', $record)),
+                    ->url(fn($record): string => route('filament.admin.resources.cashier-shifts.view', $record)),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
@@ -292,10 +295,10 @@ class ShiftReports extends Page
         }
 
         $filename = 'shifts_report_' . now()->format('Y-m-d_H-i-s') . '.csv';
-        
+
         header('Content-Type: text/csv');
         header('Content-Disposition: attachment; filename="' . $filename . '"');
-        
+
         $output = fopen('php://output', 'w');
         foreach ($csvData as $row) {
             fputcsv($output, $row);
@@ -307,7 +310,7 @@ class ShiftReports extends Page
     public function getSummaryStats(): array
     {
         $query = $this->getQuery();
-        
+
         return [
             'total_shifts' => $query->count(),
             'total_sales' => $query->sum('total_sales'),

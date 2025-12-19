@@ -11,6 +11,7 @@ class StockAdjustment extends Model
 {
     protected $fillable = [
         'product_id',
+        'store_id',
         'quantity',
         'adjustment_type',
         'reason',
@@ -37,6 +38,14 @@ class StockAdjustment extends Model
     public function product(): BelongsTo
     {
         return $this->belongsTo(Product::class);
+    }
+
+    /**
+     * Get the store that owns the stock adjustment.
+     */
+    public function store(): BelongsTo
+    {
+        return $this->belongsTo(Store::class);
     }
 
     /**
@@ -183,6 +192,7 @@ class StockAdjustment extends Model
 
         $adjustment = static::create([
             'product_id' => $product->id,
+            'store_id' => request()->get('store_id') ?: auth()->user()->store_id,
             'quantity' => $adjustmentType === 'decrease' ? -$quantity : $quantity,
             'adjustment_type' => $adjustmentType,
             'reason' => $reason,

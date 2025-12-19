@@ -22,7 +22,7 @@ class SalesReturnResource extends Resource
 
     protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-arrow-uturn-left';
 
-    protected static string | \UnitEnum | null $navigationGroup = 'Sales';
+    protected static string|\UnitEnum|null $navigationGroup = 'Sales';
 
     protected static ?int $navigationSort = 3;
 

@@ -1,2 +1,6 @@
 @import 'tailwindcss';
 @import '../../vendor/filament/filament/dist/theme.css';
+
+.bg-redColor{
+    background: red;
+}

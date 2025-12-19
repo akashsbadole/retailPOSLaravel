@@ -33,7 +33,9 @@ class ProductResource extends Resource
 {
     protected static ?string $model = Product::class;
 
-    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-squares-2x2';
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-squares-2x2';
+
+    protected static string|\UnitEnum|null $navigationGroup = 'Inventory';
 
     protected static ?int $navigationSort = 3;
 
@@ -41,56 +43,64 @@ class ProductResource extends Resource
     {
         return $schema
             ->components([
-                    TextInput::make('name')
-                        ->required()
-                        ->maxLength(255),
-                    TextInput::make('barcode')
-                        ->required()
-                        ->unique(Product::class, 'barcode', ignoreRecord: true),
-                    TextInput::make('sku')
-                        ->label('SKU')
-                        ->unique(Product::class, 'sku', ignoreRecord: true)
-                        ->nullable(),
-                    TextInput::make('price')
-                        ->label('Selling Price')
-                        ->numeric()
-                        ->required(),
-                    TextInput::make('cost_price')
-                        ->label('Cost Price')
-                        ->numeric()
-                        ->step(0.01)
-                        ->nullable()
-                        ->visible(fn () => auth()->user()->can('product.view-cost'))
-                        ->helperText('Only visible to users with cost price permission'),
-                    TextInput::make('quantity')
-                        ->numeric()
-                        ->minValue(0)
-                        ->default(1)
-                        ->required(),
-                    TextInput::make('minimum_stock')
-                        ->label('Minimum Stock')
-                        ->numeric()
-                        ->minValue(0)
-                        ->default(function () {
-                            return config('settings.default_minimum_stock', 10);
-                        })
-                        ->helperText('Alert when stock reaches this level')
-                        ->required(),
-                    TextInput::make('tax')
-                        ->label('Tax (%)')
-                        ->suffixIcon('heroicon-o-information-circle')
-                        ->helperText('Leave empty to use default tax rate from settings (' . (config('settings.default_tax_rate', '0.00')) . '%). Example: 5 for 5% VAT/GST.')
-                        ->numeric()
-                        ->default(function () {
-                            return config('settings.default_tax_rate', 0.00);
-                        }),
-                    FileUpload::make('image')
-                        ->disk('public_uploads') 
-                        ->panelLayout('grid') 
-                        ->visibility('public'),
-                    Toggle::make('status')
-                        ->label('Active')
-                        ->default(true)
+                TextInput::make('name')
+                    ->required()
+                    ->maxLength(255),
+                TextInput::make('barcode')
+                    ->required()
+                    ->unique(Product::class, 'barcode', ignoreRecord: true)
+                    ->helperText('Scan or enter barcode. Leave empty to auto-generate.')
+                    ->afterStateUpdated(function ($state, callable $set) {
+                        if (empty($state)) {
+                            $barcodeService = app(\App\Services\BarcodeService::class);
+                            $prefix = config('settings.barcode_prefix', 'PROD');
+                            $set('barcode', $barcodeService->generateUniqueBarcode($prefix));
+                        }
+                    }),
+                TextInput::make('sku')
+                    ->label('SKU')
+                    ->unique(Product::class, 'sku', ignoreRecord: true)
+                    ->nullable(),
+                TextInput::make('price')
+                    ->label('Selling Price')
+                    ->numeric()
+                    ->required(),
+                TextInput::make('cost_price')
+                    ->label('Cost Price')
+                    ->numeric()
+                    ->step(0.01)
+                    ->nullable()
+                    ->visible(fn() => auth()->user()->can('product.view-cost'))
+                    ->helperText('Only visible to users with cost price permission'),
+                TextInput::make('quantity')
+                    ->numeric()
+                    ->minValue(0)
+                    ->default(1)
+                    ->required(),
+                TextInput::make('minimum_stock')
+                    ->label('Minimum Stock')
+                    ->numeric()
+                    ->minValue(0)
+                    ->default(function () {
+                        return config('settings.default_minimum_stock', 10);
+                    })
+                    ->helperText('Alert when stock reaches this level')
+                    ->required(),
+                TextInput::make('tax')
+                    ->label('Tax (%)')
+                    ->suffixIcon('heroicon-o-information-circle')
+                    ->helperText('Leave empty to use default tax rate from settings (' . (config('settings.default_tax_rate', '0.00')) . '%). Example: 5 for 5% VAT/GST.')
+                    ->numeric()
+                    ->default(function () {
+                        return config('settings.default_tax_rate', 0.00);
+                    }),
+                FileUpload::make('image')
+                    ->disk('public_uploads')
+                    ->panelLayout('grid')
+                    ->visibility('public'),
+                Toggle::make('status')
+                    ->label('Active')
+                    ->default(true)
             ]);
     }
 
@@ -99,49 +109,53 @@ class ProductResource extends Resource
         return $table
             ->columns([
                 TextColumn::make('name')
-                                ->width(250)
-                                ->wrap()
-                                ->sortable()
-                                ->searchable(),
-                ImageColumn::make('image')->disk('public_uploads')  
-                                ->size(50)  
-                                ->square(),
-                TextColumn::make('barcode')->searchable(),
+                    ->width(250)
+                    ->wrap()
+                    ->sortable()
+                    ->searchable(),
+                ImageColumn::make('image')->disk('public_uploads')
+                    ->size(50)
+                    ->square(),
+                TextColumn::make('barcode')
+                    ->searchable()
+                    ->copyable()
+                    ->copyMessage('Barcode copied!')
+                    ->copyMessageDuration(1500),
                 TextColumn::make('sku')->searchable(),
                 TextInputColumn::make('quantity')->type('number')
-                                ->sortable()
-                                ->width(10)
-                                ->rules(['required', 'integer', 'min:1'])
-                                ->formatStateUsing(fn ($record) => $record->quantity)
-                                ->color(fn ($record): string => match (true) {
-                                    $record->quantity <= 0 => 'danger',
-                                    $record->isLowStock() => 'warning',
-                                    default => 'success',
-                                }),
+                    ->sortable()
+                    ->width(10)
+                    ->rules(['required', 'integer', 'min:1'])
+                    ->formatStateUsing(fn($record) => $record->quantity)
+                    ->color(fn($record): string => match (true) {
+                        $record->quantity <= 0 => 'danger',
+                        $record->isLowStock() => 'warning',
+                        default => 'success',
+                    }),
                 TextColumn::make('minimum_stock')
-                                ->label('Min Stock')
-                                ->sortable()
-                                ->width(10)
-                                ->alignCenter(),
+                    ->label('Min Stock')
+                    ->sortable()
+                    ->width(10)
+                    ->alignCenter(),
                 TextColumn::make('price')->label('Selling Price')->sortable(),
                 TextColumn::make('cost_price')
                     ->label('Cost Price')
                     ->sortable()
-                    ->visible(fn () => auth()->user()->can('product.view-cost'))
-                    ->formatStateUsing(fn ($state) => $state ? '$' . number_format($state, 2) : 'N/A'),
+                    ->visible(fn() => auth()->user()->can('product.view-cost'))
+                    ->formatStateUsing(fn($state) => $state ? '$' . number_format($state, 2) : 'N/A'),
                 TextColumn::make('stock_status')
-                                ->label('Stock Status')
-                                ->badge()
-                                ->color(fn ($record): string => match (true) {
-                                    $record->quantity <= 0 => 'danger',
-                                    $record->isLowStock() => 'warning',
-                                    default => 'success',
-                                })
-                                ->formatStateUsing(fn ($record): string => match (true) {
-                                    $record->quantity <= 0 => 'Out of Stock',
-                                    $record->isLowStock() => 'Low Stock',
-                                    default => 'In Stock',
-                                }),
+                    ->label('Stock Status')
+                    ->badge()
+                    ->color(fn($record): string => match (true) {
+                        $record->quantity <= 0 => 'danger',
+                        $record->isLowStock() => 'warning',
+                        default => 'success',
+                    })
+                    ->formatStateUsing(fn($record): string => match (true) {
+                        $record->quantity <= 0 => 'Out of Stock',
+                        $record->isLowStock() => 'Low Stock',
+                        default => 'In Stock',
+                    }),
                 TextColumn::make('created_at')->dateTime()->sortable(),
             ])
             ->filters([
@@ -149,33 +163,85 @@ class ProductResource extends Resource
             ])
             ->recordActions([
                 EditAction::make()
-                    ->visible(fn (): bool => auth()->user()->can('product.edit')),
-                
+                    ->visible(fn(): bool => auth()->user()->can('product.edit')),
+
                 Tables\Actions\DeleteAction::make()
-                    ->visible(fn (): bool => auth()->user()->can('product.delete')),
-                
+                    ->visible(fn(): bool => auth()->user()->can('product.delete')),
+
                 Tables\Actions\Action::make('stock_adjustment')
                     ->label('Adjust Stock')
                     ->icon('heroicon-o-arrow-path-rounded-square')
                     ->color('warning')
-                    ->url(fn ($record): string => route('filament.admin.resources.stock-adjustments.create', ['product_id' => $record->id]))
-                    ->visible(fn (): bool => auth()->user()->can('stock.adjust')),
-                    
+                    ->url(fn($record): string => route('filament.admin.resources.stock-adjustments.create', ['product_id' => $record->id]))
+                    ->visible(fn(): bool => auth()->user()->can('stock.adjust')),
+
                 Tables\Actions\Action::make('view_history')
                     ->label('Stock History')
                     ->icon('heroicon-o-clock')
                     ->color('info')
-                    ->url(fn ($record): string => route('filament.admin.resources.stock-adjustments.index', ['product_id' => $record->id]))
-                    ->visible(fn (): bool => auth()->user()->can('stock.view')),
+                    ->url(fn($record): string => route('filament.admin.resources.stock-adjustments.index', ['product_id' => $record->id]))
+                    ->visible(fn(): bool => auth()->user()->can('stock.view')),
+
+                Tables\Actions\Action::make('print_barcode')
+                    ->label('Print Barcode')
+                    ->icon('heroicon-o-printer')
+                    ->color('success')
+                    ->url(fn($record): string => route('filament.admin.pages.barcode-printing', ['product_id' => $record->id]))
+                    ->visible(fn(): bool => auth()->user()->can('barcode.print')),
+
+                Tables\Actions\Action::make('regenerate_barcode')
+                    ->label('Regenerate Barcode')
+                    ->icon('heroicon-o-arrow-path')
+                    ->color('warning')
+                    ->action(function (Product $record) {
+                        $record->regenerateBarcode();
+                        \Filament\Notifications\Notification::make()
+                            ->success()
+                            ->title('Barcode regenerated')
+                            ->body('New barcode has been generated for ' . $record->name)
+                            ->send();
+                    })
+                    ->requiresConfirmation()
+                    ->visible(fn(): bool => auth()->user()->can('product.edit')),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([
                     DeleteBulkAction::make()
-                        ->visible(fn (): bool => auth()->user()->can('product.delete')),
+                        ->visible(fn(): bool => auth()->user()->can('product.delete')),
+
+                    Tables\Actions\BulkAction::make('print_barcodes')
+                        ->label('Print Barcodes')
+                        ->icon('heroicon-o-printer')
+                        ->color('success')
+                        ->action(function (Collection $records) {
+                            return redirect()->route('filament.admin.pages.barcode-printing', ['product_ids' => $records->pluck('id')]);
+                        })
+                        ->visible(fn(): bool => auth()->user()->can('barcode.print')),
+
+                    Tables\Actions\BulkAction::make('generate_barcodes')
+                        ->label('Generate Missing Barcodes')
+                        ->icon('heroicon-o-arrow-path')
+                        ->color('warning')
+                        ->action(function (Collection $records) {
+                            $count = 0;
+                            foreach ($records as $record) {
+                                if (empty($record->barcode)) {
+                                    $record->generateBarcode();
+                                    $count++;
+                                }
+                            }
+                            
+                            \Filament\Notifications\Notification::make()
+                                ->success()
+                                ->title("Generated {$count} barcodes")
+                                ->body('Missing barcodes have been generated')
+                                ->send();
+                        })
+                        ->visible(fn(): bool => auth()->user()->can('product.edit')),
                 ]),
                 ExportBulkAction::make()->exports([
                     ExcelExport::make()
-                        ->withFilename(fn ($resource) => $resource::getModelLabel() . '-' . date('Y-m-d'))
+                        ->withFilename(fn($resource) => $resource::getModelLabel() . '-' . date('Y-m-d'))
                         ->withWriterType(Excel::CSV)
                         ->withColumns([
                             Column::make('name')->heading('Name'),
@@ -184,7 +250,7 @@ class ProductResource extends Resource
                             Column::make('price')->heading('Selling Price'),
                             Column::make('cost_price')
                                 ->heading('Cost Price')
-                                ->visible(fn () => auth()->user()->can('product.view-cost')),
+                                ->visible(fn() => auth()->user()->can('product.view-cost')),
                             Column::make('tax')->heading('Tax'),
                             Column::make('quantity')->heading('Quantity'),
                         ])

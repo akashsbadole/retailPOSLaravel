@@ -8,6 +8,7 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Filament\Models\Contracts\FilamentUser;
 use Filament\Panel;
 use Spatie\Permission\Traits\HasRoles;
@@ -26,6 +27,7 @@ class User extends Authenticatable implements FilamentUser
         'name',
         'email',
         'password',
+        'store_id',
     ];
 
     /**
@@ -59,6 +61,30 @@ class User extends Authenticatable implements FilamentUser
         return $this->hasMany(\App\Models\CashierShift::class);
     }
 
+    /**
+     * Get the store that the user belongs to.
+     */
+    public function store(): BelongsTo
+    {
+        return $this->belongsTo(Store::class);
+    }
+
+    /**
+     * Get the store cashier shifts for the user.
+     */
+    public function storeCashierShifts(): HasMany
+    {
+        return $this->hasMany(StoreCashierShift::class);
+    }
+
+    /**
+     * Get the current store shift for the user.
+     */
+    public function currentStoreShift(): ?StoreCashierShift
+    {
+        return $this->storeCashierShifts()->where('status', 'active')->first();
+    }
+
     public function currentShift(): ?\App\Models\CashierShift
     {
         return $this->cashierShifts()->open()->first();
@@ -77,5 +103,10 @@ class User extends Authenticatable implements FilamentUser
     public function canAccessPanel(Panel $panel): bool
     {
         return true;
+    }
+
+    public function getNameAttribute()
+    {
+        return $this->attributes['name'] ?? 'Unknown User';
     }
 }

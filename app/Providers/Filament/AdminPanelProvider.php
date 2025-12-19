@@ -21,6 +21,7 @@ use Illuminate\View\Middleware\ShareErrorsFromSession;
 use Filament\Navigation\NavigationItem;
 use Filament\Navigation\MenuItem;
 use Illuminate\Support\Facades\Auth;
+use App\Filament\Components\StoreSelector;
 
 class AdminPanelProvider extends PanelProvider
 {
@@ -42,6 +43,9 @@ class AdminPanelProvider extends PanelProvider
                 Dashboard::class,
                 \App\Filament\Pages\ShiftManagement::class,
                 \App\Filament\Pages\ShiftReports::class,
+                \App\Filament\Pages\ProductSalesReport::class,
+                \App\Filament\Pages\CashierPerformanceReport::class,
+                \App\Filament\Pages\ProfitReport::class,
             ])
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\\Filament\\Widgets')
             ->widgets([
@@ -66,12 +70,17 @@ class AdminPanelProvider extends PanelProvider
             ->sidebarCollapsibleOnDesktop()
             ->userMenuItems([
                 MenuItem::make('My Profile')
+                    ->label('My Profile')
                     ->url(fn(): string => route('filament.admin.auth.profile'))
                     ->icon('heroicon-o-user-circle'),
             ])
             ->renderHook(
                 'panels::user-menu.before',
-                fn(): string => view('filament.user-role-badge', ['user' => Auth::user()])->render()
+                fn (): string => view('filament.user-role-badge', ['user' => Auth::user()])->render()
+            )
+            ->renderHook(
+                'panels::topbar.start',
+                fn (): string => view('filament.components.store-selector')->render()
             )
             ->navigationItems([
                 NavigationItem::make('POS')

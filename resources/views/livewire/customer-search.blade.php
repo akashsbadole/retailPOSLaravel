@@ -16,10 +16,10 @@
     @endif
 
     @if($showDropdown and $query)
-        <ul class="absolute left-0 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-md z-10">
+        <ul class="absolute left-0 w-full mt-1 bg-red border border-gray-300 rounded-md shadow-md z-10 bg-redColor">
             @foreach($customers as $customer)
                 <li wire:click="selectCustomer({{ $customer->id }})" 
-                    class="px-4 py-2 cursor-pointer hover:bg-blue-100 dark:text-white">
+                    class="px-4 py-2 cursor-pointer hover:bg-black dark:text-white">
                     {{ $customer->first_name . ' ' . $customer->last_name }}
                 </li>
             @endforeach

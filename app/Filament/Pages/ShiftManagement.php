@@ -13,7 +13,9 @@ use Illuminate\Support\Facades\Auth;
 
 class ShiftManagement extends Page
 {
-    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-clock';
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-clock';
+
+    protected static string|\UnitEnum|null $navigationGroup = 'Shift Management';
 
     protected string $view = 'filament.pages.shift-management';
 
@@ -44,7 +46,7 @@ class ShiftManagement extends Page
                         ->default(0)
                         ->required()
                         ->helperText('Enter the amount of cash in the drawer before starting sales'),
-                    
+
                     Forms\Components\Textarea::make('notes')
                         ->label('Opening Notes')
                         ->rows(2)
@@ -77,7 +79,7 @@ class ShiftManagement extends Page
                                 </div>
                             ";
                         }),
-                    
+
                     Forms\Components\TextInput::make('closing_cash')
                         ->label('Actual Cash in Drawer (₹)')
                         ->numeric()
@@ -85,7 +87,7 @@ class ShiftManagement extends Page
                         ->step(0.01)
                         ->required()
                         ->helperText('Count all cash in the drawer and enter the actual amount'),
-                    
+
                     Forms\Components\Textarea::make('notes')
                         ->label('Closing Notes')
                         ->rows(3)
@@ -98,7 +100,7 @@ class ShiftManagement extends Page
     public function openShift(array $data): void
     {
         $user = Auth::user();
-        
+
         // Check if user already has an open shift
         if ($user->currentShift()) {
             Notification::make()
@@ -122,7 +124,7 @@ class ShiftManagement extends Page
 
         // Create new shift
         $shift = CashierShift::openShift($user, $data['opening_cash']);
-        
+
         if (!empty($data['notes'])) {
             $shift->update(['notes' => $data['notes']]);
         }
@@ -150,7 +152,7 @@ class ShiftManagement extends Page
         // Check cash discrepancy tolerance
         $tolerance = (float) (Setting::where('key', 'cash_discrepancy_tolerance')->first()?->value ?? 50.00);
         $discrepancy = $data['closing_cash'] - $this->currentShift->expected_cash;
-        
+
         if (abs($discrepancy) > $tolerance) {
             Notification::make()
                 ->title('Large Cash Discrepancy')
@@ -178,7 +180,7 @@ class ShiftManagement extends Page
                 ->label('Open New Shift')
                 ->icon('heroicon-o-play')
                 ->color('success')
-                ->visible(fn () => !$this->currentShift && auth()->user()->can('cashier-shift.create'))
+                ->visible(fn() => !$this->currentShift && auth()->user()->can('cashier-shift.create'))
                 ->form($this->openShiftForm())
                 ->action('openShift'),
 
@@ -186,7 +188,7 @@ class ShiftManagement extends Page
                 ->label('Close Shift')
                 ->icon('heroicon-o-stop')
                 ->color('danger')
-                ->visible(fn () => $this->currentShift && auth()->user()->can('cashier-shift.close'))
+                ->visible(fn() => $this->currentShift && auth()->user()->can('cashier-shift.close'))
                 ->form($this->closeShiftForm())
                 ->action('closeShift'),
         ];

@@ -1,182 +1,323 @@
-<p align="center"><a href="#logo"><img src="https://raw.githubusercontent.com/mailmug/laravel-easy-pos/main/easy-pos-logo.svg" width="400" alt="Laravel POS Logo"></a></p>
+# SuperMart POS System
 
-A simple, open-source **Point of Sale (POS) system** built with Laravel and FilamentPHP.
-You can also use Laravel Easy POS as a lightweight and effective invoice generator for your services — not just products.
+A comprehensive Point of Sale (POS) system built with Laravel and FilamentPHP, designed for retail businesses of all sizes. SuperMart POS provides complete inventory management, sales tracking, reporting, and multi-store capabilities with a modern, responsive interface.
 
-It is ready with Filament v4. Please check it and feel free to share your feedback at info@mailmug.net
+## 🌟 Features Overview
 
-[Version 1.2.0](https://github.com/mailmug/laravel-easy-pos/tree/v1.2.0)
+SuperMart POS has evolved through 5 development phases, each adding critical business functionality:
 
-## Features 🛠️
-- ✅ Easy-to-use POS interface
-- ✅ Built with Laravel & FilamentPHP
-- ✅ Secure authentication & user management
-- ✅ Inventory & product management
-- ✅ Sales tracking & reports
-- ✅ Responsive UI
+### 📊 Phase 0: Foundation
+- Basic Laravel application setup
+- FilamentPHP admin panel integration
+- User authentication system
+- Database structure foundation
 
-<br>
-<br>
+### 🛍️ Phase 1: Core POS Features
+- **Product Management**: Complete CRUD operations for products
+- **POS Checkout Screen**: Intuitive sales interface
+- **Invoice Generation**: Professional invoice creation
+- **Sales Recording**: Transaction history and tracking
+- **Basic Reports**: Essential sales analytics
 
-## 🚀 Demo Available:
+### 👥 Phase 2: Customer & Sales Enhancement
+- **Customer Management**: Customer database and history
+- **Discount System**: Item-level and bill-level discounts
+- **Tax/GST Configuration**: Flexible tax management
+- **Multiple Payment Types**: Cash, card, UPI, bank transfer
+- **Low Stock Alerts**: Automated inventory notifications
 
-**Live Demo** : https://filament-pos.phpbolt.com/
+### 🔐 Phase 3: Operations & Security
+- **User Roles**: Admin, Manager, and Cashier permissions
+- **Stock Adjustment**: Manual inventory corrections
+- **Cashier Shift System**: Shift management with handover
+- **Sales Return/Refund**: Complete return processing
 
-**Username:** admin@admin.com
+### 📈 Phase 4: Business Intelligence & Reporting
+- **Product Sales Report**: Top/low selling products, trends, category analysis
+- **Cashier Performance Report**: Staff productivity metrics and KPIs
+- **Profit Report**: Comprehensive profit analysis with COGS tracking
+- **Advanced Filtering**: Date ranges, stores, categories, products
+- **Data Visualization**: Charts, graphs, and heat maps
+- **Export Capabilities**: PDF, Excel, CSV formats
 
-**Password:** pass@123
-<br>
-<br>
+### 🚀 Phase 5: Advanced Enterprise Features
+- **Supplier & Purchase Management**: Complete supply chain management
+- **Barcode Scanner Support**: Hardware integration and mobile scanning
+- **Multi-Store Support**: Unlimited locations with centralized management
+- **Mobile POS & API**: RESTful API with mobile-optimized interface
+- **Real-time Synchronization**: WebSocket-based live updates
 
-**Demo Service Invoice:** [View Sample Invoice](https://comfort.phpbolt.com/invoice-001.pdf)
+## 🏗️ Technical Architecture
 
-<br>
-<br>
+### Backend Technologies
+- **Framework**: Laravel 11.x
+- **Admin Panel**: FilamentPHP 4.x
+- **Database**: MySQL 8.0+ / MariaDB 10.6+
+- **Authentication**: Laravel Sanctum (API)
+- **Real-time**: WebSocket with Pusher integration
+- **Caching**: Redis for performance optimization
 
-## ⭐ Show your support!
-If you find this project helpful, please consider giving it a star on GitHub
+### Frontend Technologies
+- **UI Framework**: FilamentPHP components
+- **Mobile Interface**: Responsive touch-friendly design
+- **Real-time Updates**: Laravel Echo & WebSocket
+- **Barcode Processing**: Multiple format support
 
-<br>
+### Key Libraries
+- `laravel/sanctum`: API authentication
+- `mpdf/mpdf`: PDF generation
+- `picqer/php-barcode-generator`: Barcode creation
+- `pxlrbt/filament-excel`: Excel exports
+- `spatie/laravel-permission`: Role-based access control
 
-## Installation & Custom Invoice Template Service
+## 📱 Mobile POS & API
 
-We offer a hassle-free installation service for Laravel Easy POS for just **$29**. 
-Need a custom invoice template? We can design one for an additional price!
+The system includes a comprehensive RESTful API and mobile-optimized interface:
 
-✅ **Services Offered:**
+### API Endpoints
+- **Authentication**: Login, logout, user management
+- **Products**: CRUD operations, search, barcode lookup
+- **Orders**: Create, update, track orders
+- **Customers**: Management and search
+- **Stores**: Details, inventory, statistics
+- **Payments**: Processing and tracking
 
-- **Installation & Setup** – $29
-- **Custom Invoice Template** – Additional cost (contact us for pricing)
-- Configuration assistance & basic troubleshooting
+### Mobile Features
+- Touch-friendly interface optimized for smartphones and tablets
+- Offline capability with automatic synchronization
+- Camera-based barcode scanning
+- Real-time inventory updates
+- Multiple payment method support
 
-* 📩 Contact Us:
-* ✉️ Email: info@mailmug.net
-* 💬 Discord: arshidkv12
-* 🌐 Website: [wpdebuglog.com/contact/](https://wpdebuglog.com/contact/)
+### API Documentation
+Interactive API documentation available at `/api/documentation` with complete OpenAPI 3.0 specification.
 
-Get in touch today, and let us handle the setup for you! 🚀
+## 🏪 Multi-Store Management
 
+SuperMart POS supports unlimited store locations from a single installation:
 
-### **POS Interface**  
-![POS Interface](https://raw.githubusercontent.com/mailmug/laravel-easy-pos/main/public/img/laravel-easy-pos.png)  
+### Store Features
+- Individual store configuration and settings
+- Store-specific inventory tracking
+- Stock transfer between locations
+- Store assignment for users
+- Cross-store reporting and analytics
+- Consolidated performance metrics
 
+### User Management
+- Store-specific user assignments
+- Multi-store access permissions
+- Role-based access control per store
+- Centralized user administration
 
-### **Invoice**  
+## 📊 Business Reports
 
-It supports thermal printing.
+### Product Sales Report
+- Top and low selling products identification
+- Sales trends over time periods
+- Category-based sales breakdown
+- Stock correlation analysis
+- Export to PDF, Excel, and CSV
 
-<p align="center">
-  <img src="https://raw.githubusercontent.com/mailmug/laravel-easy-pos/main/public/img/invoice.png" alt="POS Invoice" style="border:1px solid #ddd">
-</p> 
-<br>
-<br>
+### Cashier Performance Report
+- Individual cashier sales tracking
+- Transaction analysis and metrics
+- Shift performance evaluation
+- Error tracking (refunds, voids)
+- Productivity metrics and benchmarks
 
-### 🛠️ How to Use as an Invoice Generator
+### Profit Report
+- Overall profit analysis and margins
+- Product-level profitability tracking
+- Category profit breakdown
+- Cost of goods sold (COGS) tracking
+- Profit trend analysis over time
 
-**Install the application**  
-Follow the standard installation process in the setup section.
+## 🔧 Installation & Setup
 
-**Add your services as “products”**  
-For example:
+### System Requirements
+- **PHP**: 8.2 or higher
+- **Web Server**: Apache 2.4+ or Nginx 1.18+
+- **Database**: MySQL 8.0+ or MariaDB 10.6+
+- **Memory**: 2GB RAM minimum (4GB+ recommended)
+- **Storage**: 10GB available space
+- **SSL**: Valid SSL certificate (required for mobile POS)
 
-- **Service Name:** Deep Cleaning - 2BHK  
-- **Price:** 499  
-- **Description:** Full deep-clean for 2BHK apartment
+### Quick Installation
 
-**Create a new sale or transaction**
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/ak/laravel-easy-pos.git
+   cd laravel-easy-pos
+   ```
 
-- Go to the POS dashboard  
-- Select the service (like “Deep Cleaning - 2BHK”)  
-- Enter quantity (usually 1)  
-- Add customer info if needed
+2. **Install dependencies**
+   ```bash
+   composer install --optimize-autoloader --no-dev
+   npm install
+   npm run build
+   ```
 
-**Print or download the invoice**
+3. **Configure environment**
+   ```bash
+   cp .env.example .env
+   php artisan key:generate
+   ```
 
-- After checkout, you can **Print** the receipt  
-- Or use **PDF export** if integrated
+4. **Set up database**
+   ```sql
+   CREATE DATABASE supermart CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+   ```
 
+5. **Run migrations**
+   ```bash
+   php artisan migrate --force
+   php artisan db:seed --class=DatabaseSeeder --force
+   ```
 
-## Installation Guide 🏗️
+6. **Start the application**
+   ```bash
+   php artisan serve
+   ```
 
-### Web Install
-1. Download the zip file 
-https://filament-pos.phpbolt.com/laravel-easy-pos.zip
+### Detailed Setup Instructions
 
-2. Upload the file to **public_html** folder.
+For comprehensive installation, configuration, and deployment instructions, please refer to our [Setup & Configuration Guide](setup-configuration.md).
 
-Point the domain name to public_html/public folder.
+## 🔐 Security Features
 
-3. Edit `.env` file
+- **Role-based Access Control**: Granular permissions for all user roles
+- **API Authentication**: Laravel Sanctum token-based authentication
+- **Rate Limiting**: Prevent API abuse with configurable limits
+- **Data Encryption**: Sensitive data encryption at rest
+- **Audit Trail**: Complete logging of all system activities
+- **CORS Configuration**: Secure cross-origin resource sharing
+- **Input Validation**: Comprehensive request validation and sanitization
 
-4. Navigate your-domain.com/install
+## 📈 Performance Optimizations
 
+- **Database Indexing**: Strategic indexes for optimal query performance
+- **Caching**: Redis implementation for frequently accessed data
+- **Lazy Loading**: Efficient data loading for large datasets
+- **Pagination**: Paginated lists and reports
+- **Image Optimization**: Compressed images for mobile performance
+- **Response Compression**: Gzip compression for API responses
 
-### Local Install
+## 🔄 Recent Updates & Fixes
 
-1. **Clone the repository:**
+### StoreSelector Component Fix (v2.0.1)
+- Fixed store selection persistence across page refreshes
+- Improved error handling for invalid store selections
+- Enhanced performance for stores with large inventories
+- Added visual indicators for active store context
 
-```shell
-git clone https://github.com/mailmug/laravel-easy-pos.git
-cd laravel-easy-pos
+### Version 2.0.0 Highlights
+- Complete Phase 4 Reports implementation
+- Full Phase 5 Advanced Features deployment
+- Enhanced security with Laravel Sanctum
+- Improved mobile POS performance
+- Comprehensive API documentation
+
+## 📚 Documentation
+
+- [Setup & Configuration Guide](setup-configuration.md) - Complete installation and configuration
+- [Phase 4 Reports Documentation](phase-4-reports.md) - Detailed reporting features guide
+- [Phase 5 Features Documentation](phase-5-features.md) - Advanced features overview
+- [Mobile POS API Documentation](mobile-pos-api-documentation.md) - API reference and usage
+- [CHANGELOG.md](CHANGELOG.md) - Version history and updates
+
+## 🗂️ Project Structure
+
+```
+app/
+├── Console/                    # Artisan commands
+├── Events/                     # Event definitions
+├── Exceptions/                 # Exception handlers
+├── Filament/                   # FilamentPHP components
+│   ├── Components/            # Custom Filament components
+│   ├── Pages/                 # Custom admin pages
+│   ├── Resources/             # Resource definitions
+│   └── Widgets/               # Dashboard widgets
+├── Http/                      # HTTP layer
+│   ├── Controllers/           # Web and API controllers
+│   └── Middleware/            # Custom middleware
+└── Models/                    # Eloquent models
+
+database/
+├── factories/                 # Model factories
+├── migrations/                # Database migrations
+└── seeders/                   # Database seeders
+
+resources/
+├── views/                     # Blade templates
+│   ├── mobile-pos/           # Mobile POS interface
+│   └── api/                  # API documentation
+└── js/                       # JavaScript assets
+
+routes/
+├── api.php                    # API routes
+└── web.php                    # Web routes
 ```
 
-2. **Install dependencies:**
+## 🧪 Testing
 
-```shell
-composer install
-npm install
-npm run build
+The system includes comprehensive test coverage:
+
+- **Unit Tests**: Model and service layer testing
+- **Feature Tests**: Complete workflow testing
+- **API Tests**: All endpoints with authentication
+- **Integration Tests**: Cross-component functionality
+
+Run tests with:
+```bash
+php artisan test
 ```
 
-3. **Update .env file**
+## 🤝 Contributing
 
-```shell
-DB_CONNECTION=mysql
-DB_DATABASE=your_database
-DB_USERNAME=your_username
-DB_PASSWORD=your_password
-APP_URL=http://localhost
+We welcome contributions to the SuperMart POS system! Please follow these guidelines:
 
-```
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Add tests for new functionality
+5. Submit a pull request
 
-4. **Copy .env file**
+## 📄 License
 
-```shell
-cp .env.example .env
-php artisan key:generate
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-```
+## 🆘 Support
 
-5. **Run the application:**
+For technical support and questions:
 
-```shell
-php artisan serve
-```
+- **Documentation**: Check our comprehensive documentation files
+- **API Reference**: Interactive documentation at `/api/documentation`
+- **Issues**: Report via project issue tracker
+- **Email**: support@supermart.com
+- **Community**: Join our Discord community
 
-Navigate to the home page, and it will automatically add the demo data.
+## 🗺️ Roadmap
 
-**Username:** admin@admin.com
+### Version 2.1.0 (Planned)
+- Advanced analytics dashboard
+- AI-powered inventory forecasting
+- Enhanced mobile app features
+- Supplier portal implementation
 
-**Password:** pass@123
+### Version 2.2.0 (Planned)
+- Integration with accounting systems
+- Loyalty program management
+- Advanced customer management
+- Enhanced barcode features
 
+## 🏆 Acknowledgments
 
-✅ That's it! No further commands needed. The installation is automatic. 🎉 
-Navigate the website. 
+- [Laravel](https://laravel.com/) - The PHP framework for web artisans
+- [FilamentPHP](https://filamentphp.com/) - Elegant admin panels for Laravel
+- [Laravel Sanctum](https://laravel.com/docs/sanctum) - API authentication package
+- All contributors who have helped make this project better
 
+---
 
-## Contribute 🤝
-We ❤️ contributions! Feel free to submit issues or pull requests.
-
-1. Fork the repo
-2. Create a new branch
-3. Commit your changes
-4. Open a Pull Request
- 
-
-## License 📜
-This project is licensed under the GPL-3.0 License.
-
-
-**💡 Built with Laravel & FilamentPHP – Making POS Simple! 🚀**
-
-Let me know if you want to add anything specific! 😃
+**SuperMart POS** - Empowering businesses with powerful, scalable, and user-friendly point of sale solutions.

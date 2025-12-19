@@ -88,5 +88,8 @@ class Kernel extends HttpKernel
         'signed' => ValidateSignature::class,
         'throttle' => ThrottleRequests::class,
         'verified' => EnsureEmailIsVerified::class,
+        'api.auth' => \Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class,
+        'api.rate.limit' => \Illuminate\Routing\Middleware\ThrottleRequests::class.':60,1',
+        'api.rate.limit.strict' => \Illuminate\Routing\Middleware\ThrottleRequests::class.':30,1',
     ];
 }
