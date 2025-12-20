@@ -8,6 +8,8 @@ use App\Models\Purchase;
 use App\Models\Supplier;
 use App\Models\Product;
 use Filament\Forms;
+use App\Filament\Actions\PurchaseImportAction;
+use App\Filament\Actions\PurchaseExportAction;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Tables;
@@ -246,6 +248,10 @@ class PurchaseResource extends Resource
                     ->visible(fn (Purchase $record): bool => 
                         auth()->user()->can('supplier-payment.create') && $record->remaining_amount > 0
                     ),
+            ])
+            ->toolbarActions([
+                PurchaseImportAction::make(),
+                PurchaseExportAction::make(),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([

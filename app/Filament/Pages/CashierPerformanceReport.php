@@ -151,7 +151,7 @@ class CashierPerformanceReport extends Page
                     ->alignCenter(),
             ])
             ->emptyStateActions([
-                Tables\Actions\Action::make('create_shift')
+                Action::make('create_shift')
                     ->label('Create Shift')
                     ->icon('heroicon-o-plus')
                     ->url(route('filament.admin.resources.cashier-shifts.create')),

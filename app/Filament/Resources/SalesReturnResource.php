@@ -7,6 +7,11 @@ use App\Filament\Resources\SalesReturnResource\RelationManagers;
 use App\Models\SalesReturn;
 use App\Models\Setting;
 use App\Services\SalesReturnService;
+use Filament\Actions\Action;
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteBulkAction;
+use Filament\Actions\EditAction;
+use Filament\Actions\ViewAction;
 use Filament\Forms;
 use Filament\Schemas\Schema;
 use Filament\Resources\Resource;
@@ -286,15 +291,15 @@ class SalesReturnResource extends Resource
                     }),
             ])
             ->actions([
-                Tables\Actions\ViewAction::make(),
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\Action::make('print_credit_note')
+                ViewAction::make(),
+                EditAction::make(),
+                Action::make('print_credit_note')
                     ->label('Print Credit Note')
                     ->icon('heroicon-o-document-text')
                     ->color('info')
                     ->url(fn ($record) => route('utility.print-credit-note', $record->id))
                     ->openUrlInNewTab(),
-                Tables\Actions\Action::make('approve')
+                Action::make('approve')
                     ->label('Approve')
                     ->icon('heroicon-o-check')
                     ->color('success')
@@ -303,7 +308,7 @@ class SalesReturnResource extends Resource
                     ->action(function (SalesReturn $record) {
                         $record->approve();
                     }),
-                Tables\Actions\Action::make('reject')
+                Action::make('reject')
                     ->label('Reject')
                     ->icon('heroicon-o-x-mark')
                     ->color('danger')
@@ -312,7 +317,7 @@ class SalesReturnResource extends Resource
                     ->action(function (SalesReturn $record) {
                         $record->reject();
                     }),
-                Tables\Actions\Action::make('process')
+                Action::make('process')
                     ->label('Process')
                     ->icon('heroicon-o-cog')
                     ->color('info')
@@ -321,7 +326,7 @@ class SalesReturnResource extends Resource
                     ->action(function (SalesReturn $record) {
                         $record->process();
                     }),
-                Tables\Actions\Action::make('complete')
+                Action::make('complete')
                     ->label('Complete')
                     ->icon('heroicon-o-check-circle')
                     ->color('primary')
@@ -332,8 +337,8 @@ class SalesReturnResource extends Resource
                     }),
             ])
             ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
+                BulkActionGroup::make([
+                    DeleteBulkAction::make(),
                 ]),
             ]);
     }

@@ -2,6 +2,8 @@
 
 namespace App\Filament\Resources\OrderResource\RelationManagers;
 
+use Filament\Actions\Action;
+use Filament\Actions\ViewAction;
 use Filament\Forms;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Schemas\Schema;
@@ -103,14 +105,14 @@ class SalesReturnsRelationManager extends RelationManager
                     ]),
             ])
             ->headerActions([
-                Tables\Actions\Action::make('create_return')
+                Action::make('create_return')
                     ->label('Create Return')
                     ->icon('heroicon-o-arrow-uturn-left')
                     ->color('warning')
                     ->url(fn () => route('filament.admin.resources.sales-returns.create', ['order_id' => $this->getOwnerRecord()->id])),
             ])
             ->actions([
-                Tables\Actions\ViewAction::make()
+                ViewAction::make()
                     ->url(fn ($record) => route('filament.admin.resources.sales-returns.view', $record)),
             ])
             ->bulkActions([

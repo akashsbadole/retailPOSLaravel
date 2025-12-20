@@ -46,9 +46,12 @@ class AdminPanelProvider extends PanelProvider
                 \App\Filament\Pages\ProductSalesReport::class,
                 \App\Filament\Pages\CashierPerformanceReport::class,
                 \App\Filament\Pages\ProfitReport::class,
+                \App\Filament\Pages\BackupSettings::class,
             ])
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\\Filament\\Widgets')
             ->widgets([
+                \App\Filament\Widgets\BackupStatsWidget::class,
+                \App\Filament\Widgets\RecentBackupsWidget::class,
                 // Widgets\AccountWidget::class,
                 // Widgets\FilamentInfoWidget::class,
             ])

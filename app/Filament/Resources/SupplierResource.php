@@ -6,6 +6,8 @@ use App\Filament\Resources\SupplierResource\Pages;
 use App\Filament\Resources\SupplierResource\RelationManagers;
 use App\Models\Supplier;
 use Filament\Forms;
+use App\Filament\Actions\SupplierImportAction;
+use App\Filament\Actions\SupplierExportAction;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Tables;
@@ -162,6 +164,10 @@ class SupplierResource extends Resource
                     ->color('success')
                     ->url(fn ($record): string => route('filament.admin.resources.supplier-payments.create', ['supplier_id' => $record->id]))
                     ->visible(fn (): bool => auth()->user()->can('supplier-payment.create') && $record->total_due > 0),
+            ])
+            ->toolbarActions([
+                SupplierImportAction::make(),
+                SupplierExportAction::make(),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([

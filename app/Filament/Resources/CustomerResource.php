@@ -7,6 +7,8 @@ use Filament\Tables\Table;
 use Filament\Actions\EditAction;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
+use App\Filament\Actions\CustomerImportAction;
+use App\Filament\Actions\CustomerExportAction;
 use App\Filament\Resources\CustomerResource\Pages\ListCustomers;
 use App\Filament\Resources\CustomerResource\Pages\EditCustomer;
 use App\Filament\Resources\CustomerResource\Pages;
@@ -79,6 +81,8 @@ class CustomerResource extends Resource
                 DeleteAction::make(),
             ])
             ->toolbarActions([
+                CustomerImportAction::make(),
+                CustomerExportAction::make(),
                 DeleteBulkAction::make(),
             ]);
     }

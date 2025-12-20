@@ -4,6 +4,7 @@ namespace App\Filament\Pages;
 
 use App\Models\Product;
 use App\Services\BarcodeService;
+use Filament\Actions\Action;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Pages\Page;
@@ -132,7 +133,7 @@ class BarcodePrinting extends Page implements HasTable
                     ->label('Has Barcode'),
             ])
             ->actions([
-                Tables\Actions\Action::make('print_single')
+                Action::make('print_single')
                     ->label('Print')
                     ->icon('heroicon-o-printer')
                     ->color('success')

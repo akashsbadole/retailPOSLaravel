@@ -8,6 +8,8 @@ use Filament\Actions\DeleteAction;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Maatwebsite\Excel\Excel;
+use App\Filament\Actions\OrderImportAction;
+use App\Filament\Actions\OrderExportAction;
 use App\Filament\Resources\OrderResource\Pages\ListOrders;
 use App\Filament\Resources\OrderResource\Pages\EditOrder;
 use App\Filament\Resources\OrderResource\Pages;
@@ -192,6 +194,8 @@ class OrderResource extends Resource
                     ->visible(fn ($record) => auth()->user()->can('shift.view') && $record->cashierShift),
             ])
             ->toolbarActions([
+                OrderImportAction::make(),
+                OrderExportAction::make(),
                 BulkActionGroup::make([
                     DeleteBulkAction::make(),
                     ExportBulkAction::make()->exports([

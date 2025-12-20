@@ -3,6 +3,7 @@
 namespace App\Filament\Widgets;
 
 use App\Models\Product;
+use Filament\Actions\Action;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Filament\Widgets\TableWidget as BaseWidget;
@@ -59,12 +60,12 @@ class LowStockAlert extends BaseWidget
                     ->formatStateUsing(fn ($state): string => $state <= 0 ? $state : '+' . $state),
             ])
             ->actions([
-                Tables\Actions\Action::make('update_stock')
+                Action::make('update_stock')
                     ->label('Update Stock')
                     ->icon('heroicon-o-pencil')
                     ->url(fn ($record): string => route('filament.admin.resources.products.edit', $record))
                     ->openUrlInNewTab(),
-                Tables\Actions\Action::make('reorder')
+                Action::make('reorder')
                     ->label('Reorder')
                     ->icon('heroicon-o-shopping-cart')
                     ->color('success')
@@ -80,7 +81,7 @@ class LowStockAlert extends BaseWidget
             ->emptyStateHeading('No Low Stock Products')
             ->emptyStateDescription('All products are well stocked!')
             ->emptyStateActions([
-                Tables\Actions\Action::make('view_all_products')
+                Action::make('view_all_products')
                     ->label('View All Products')
                     ->url(route('filament.admin.resources.products.index'))
                     ->icon('heroicon-o-squares-2x2'),

@@ -4,6 +4,7 @@ use App\Http\Controllers\UtilityController;
 use App\Http\Controllers\InstallController;
 use App\Http\Controllers\StoreController;
 use App\Http\Controllers\MobilePosController;
+use App\Http\Controllers\ImportExportController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Artisan;
 
@@ -39,18 +40,10 @@ Route::get('/clear', function(){
     Artisan::call('view:clear');
 });
 
-// Protected routes examples
-Route::get('/admin/users', function () {
-    return 'User Management - Protected Route';
-})->middleware(['auth', 'role:user.view']);
-
-Route::get('/admin/stock-adjustment', function () {
-    return 'Stock Adjustment - Protected Route';
-})->middleware(['auth', 'role:stock.adjust']);
-
-Route::get('/admin/reports', function () {
-    return 'Reports - Protected Route';
-})->middleware(['auth', 'role:report.view']);
+// Protected routes examples - REMOVED: These were conflicting with Filament resources
+// Route::get('/admin/users', ...);
+// Route::get('/admin/stock-adjustment', ...);
+// Route::get('/admin/reports', ...);
 
 // Store switching route
 Route::post('/admin/stores/switch', [StoreController::class, 'switch'])->name('filament.admin.stores.switch')->middleware('auth');
@@ -59,4 +52,10 @@ Route::post('/admin/stores/switch', [StoreController::class, 'switch'])->name('f
 Route::prefix('mobile-pos')->group(function () {
     Route::get('/login', [MobilePosController::class, 'login'])->name('mobile-pos.login');
     Route::get('/', [MobilePosController::class, 'index'])->name('mobile-pos.index')->middleware('auth');
+});
+
+// Import/Export Routes
+Route::prefix('import-export')->group(function () {
+    Route::get('/template/{resource}/{format?}', [ImportExportController::class, 'downloadTemplate'])->name('import-export.template');
+    Route::get('/download/{job}', [ImportExportController::class, 'download'])->name('import-export.download');
 });

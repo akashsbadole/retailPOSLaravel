@@ -3,9 +3,13 @@
 namespace App\Filament\Resources;
 
 use Filament\Schemas\Schema;
+use Filament\Actions\Action;
 use Filament\Actions\EditAction;
+use Filament\Actions\BulkAction;
 use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
+use Illuminate\Database\Eloquent\Collection;
 use Maatwebsite\Excel\Excel;
 use App\Filament\Resources\ProductResource\Pages\ListProducts;
 use App\Filament\Resources\ProductResource\Pages;
@@ -28,6 +32,8 @@ use Filament\Tables\Columns\TextInputColumn;
 use pxlrbt\FilamentExcel\Actions\Tables\ExportBulkAction;
 use pxlrbt\FilamentExcel\Exports\ExcelExport;
 use pxlrbt\FilamentExcel\Columns\Column;
+use App\Filament\Actions\ProductImportAction;
+use App\Filament\Actions\ProductExportAction;
 
 class ProductResource extends Resource
 {
@@ -165,31 +171,31 @@ class ProductResource extends Resource
                 EditAction::make()
                     ->visible(fn(): bool => auth()->user()->can('product.edit')),
 
-                Tables\Actions\DeleteAction::make()
+                DeleteAction::make()
                     ->visible(fn(): bool => auth()->user()->can('product.delete')),
 
-                Tables\Actions\Action::make('stock_adjustment')
+                Action::make('stock_adjustment')
                     ->label('Adjust Stock')
                     ->icon('heroicon-o-arrow-path-rounded-square')
                     ->color('warning')
                     ->url(fn($record): string => route('filament.admin.resources.stock-adjustments.create', ['product_id' => $record->id]))
                     ->visible(fn(): bool => auth()->user()->can('stock.adjust')),
 
-                Tables\Actions\Action::make('view_history')
+                Action::make('view_history')
                     ->label('Stock History')
                     ->icon('heroicon-o-clock')
                     ->color('info')
                     ->url(fn($record): string => route('filament.admin.resources.stock-adjustments.index', ['product_id' => $record->id]))
                     ->visible(fn(): bool => auth()->user()->can('stock.view')),
 
-                Tables\Actions\Action::make('print_barcode')
+                Action::make('print_barcode')
                     ->label('Print Barcode')
                     ->icon('heroicon-o-printer')
                     ->color('success')
                     ->url(fn($record): string => route('filament.admin.pages.barcode-printing', ['product_id' => $record->id]))
                     ->visible(fn(): bool => auth()->user()->can('barcode.print')),
 
-                Tables\Actions\Action::make('regenerate_barcode')
+                Action::make('regenerate_barcode')
                     ->label('Regenerate Barcode')
                     ->icon('heroicon-o-arrow-path')
                     ->color('warning')
@@ -209,7 +215,7 @@ class ProductResource extends Resource
                     DeleteBulkAction::make()
                         ->visible(fn(): bool => auth()->user()->can('product.delete')),
 
-                    Tables\Actions\BulkAction::make('print_barcodes')
+                    BulkAction::make('print_barcodes')
                         ->label('Print Barcodes')
                         ->icon('heroicon-o-printer')
                         ->color('success')
@@ -218,7 +224,7 @@ class ProductResource extends Resource
                         })
                         ->visible(fn(): bool => auth()->user()->can('barcode.print')),
 
-                    Tables\Actions\BulkAction::make('generate_barcodes')
+                    BulkAction::make('generate_barcodes')
                         ->label('Generate Missing Barcodes')
                         ->icon('heroicon-o-arrow-path')
                         ->color('warning')
@@ -239,6 +245,8 @@ class ProductResource extends Resource
                         })
                         ->visible(fn(): bool => auth()->user()->can('product.edit')),
                 ]),
+                ProductImportAction::make(),
+                ProductExportAction::make(),
                 ExportBulkAction::make()->exports([
                     ExcelExport::make()
                         ->withFilename(fn($resource) => $resource::getModelLabel() . '-' . date('Y-m-d'))
