@@ -10,6 +10,14 @@
     <script src="https://cdn.jsdelivr.net/npm/laravel-echo@1.15.0/dist/echo.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
+        :root {
+            --primary-blue: #3b82f6;
+            --dark-blue: #1e40af;
+            --accent-red: #ef4444;
+            --accent-yellow: #fbbf24;
+            --light-blue: #dbeafe;
+        }
+        
         .touch-button {
             min-height: 44px;
             min-width: 44px;
@@ -17,12 +25,18 @@
         }
         .product-card {
             transition: all 0.2s ease;
+            border: 2px solid transparent;
+        }
+        .product-card:hover {
+            border-color: var(--primary-blue);
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.2);
         }
         .product-card:active {
             transform: scale(0.95);
         }
         .cart-item {
             animation: slideIn 0.3s ease;
+            border-left: 4px solid var(--primary-blue);
         }
         @keyframes slideIn {
             from {
@@ -62,14 +76,42 @@
             transform: scale(0.95);
         }
         .payment-method.selected {
-            border-color: #3b82f6;
-            background-color: #eff6ff;
+            border-color: var(--primary-blue);
+            background-color: var(--light-blue);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+        
+        /* POS Color Scheme */
+        .btn-primary {
+            background-color: var(--primary-blue);
+        }
+        .btn-primary:hover {
+            background-color: var(--dark-blue);
+        }
+        .btn-danger {
+            background-color: var(--accent-red);
+        }
+        .btn-danger:hover {
+            background-color: #dc2626;
+        }
+        .btn-success {
+            background-color: #10b981;
+        }
+        .btn-success:hover {
+            background-color: #059669;
+        }
+        .btn-warning {
+            background-color: var(--accent-yellow);
+            color: #1f2937;
+        }
+        .btn-warning:hover {
+            background-color: #f59e0b;
         }
     </style>
 </head>
 <body class="bg-gray-100 h-screen overflow-hidden">
     <!-- Header -->
-    <header class="bg-blue-600 text-white p-4 shadow-lg">
+    <header class="bg-gradient-to-r from-blue-600 to-blue-700 text-white p-4 shadow-lg">
         <div class="flex justify-between items-center">
             <div class="flex items-center space-x-3">
                 <i class="fas fa-cash-register text-2xl"></i>
@@ -77,7 +119,7 @@
             </div>
             <div class="flex items-center space-x-4">
                 <div id="connectionStatus" class="flex items-center">
-                    <i class="fas fa-wifi text-green-300"></i>
+                    <i class="fas fa-wifi text-yellow-300"></i>
                     <span class="ml-2 text-sm">Online</span>
                 </div>
                 <div class="flex items-center">
@@ -94,19 +136,19 @@
     <!-- Main Content -->
     <main class="flex flex-col h-[calc(100vh-80px)]">
         <!-- Search Bar -->
-        <div class="bg-white p-4 shadow-sm border-b">
+        <div class="bg-white p-4 shadow-sm border-b-2 border-blue-200">
             <div class="relative">
                 <input 
                     type="text" 
                     id="searchInput" 
                     placeholder="Search products or scan barcode..."
-                    class="w-full pl-10 pr-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-lg"
+                    class="w-full pl-10 pr-4 py-3 border-2 border-blue-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-lg"
                     autocomplete="off"
                 >
-                <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-blue-400"></i>
                 <button 
                     onclick="scanBarcode()" 
-                    class="absolute right-3 top-1/2 transform -translate-y-1/2 touch-button bg-blue-500 text-white p-2 rounded"
+                    class="absolute right-3 top-1/2 transform -translate-y-1/2 touch-button bg-blue-500 hover:bg-blue-600 text-white p-2 rounded"
                 >
                     <i class="fas fa-barcode"></i>
                 </button>
@@ -129,11 +171,11 @@
             <!-- Cart Sidebar -->
             <div class="w-full md:w-96 bg-white shadow-lg border-l flex flex-col">
                 <!-- Cart Header -->
-                <div class="bg-gray-50 p-4 border-b">
-                    <h2 class="text-lg font-semibold flex items-center">
-                        <i class="fas fa-shopping-cart mr-2"></i>
+                <div class="bg-gradient-to-r from-blue-50 to-blue-100 p-4 border-b-2 border-blue-300">
+                    <h2 class="text-lg font-semibold text-blue-900 flex items-center">
+                        <i class="fas fa-shopping-cart mr-2 text-blue-600"></i>
                         Cart
-                        <span id="cartCount" class="ml-2 bg-blue-500 text-white px-2 py-1 rounded-full text-xs">0</span>
+                        <span id="cartCount" class="ml-2 bg-red-500 text-white px-2 py-1 rounded-full text-xs font-bold">0</span>
                     </h2>
                 </div>
 
@@ -146,57 +188,57 @@
                 </div>
 
                 <!-- Cart Summary -->
-                <div class="border-t p-4 bg-gray-50">
+                <div class="border-t-2 border-blue-200 p-4 bg-gradient-to-b from-blue-50 to-white">
                     <div class="space-y-2">
                         <div class="flex justify-between">
-                            <span>Subtotal:</span>
-                            <span id="subtotal" class="font-semibold">₹0.00</span>
+                            <span class="text-gray-700">Subtotal:</span>
+                            <span id="subtotal" class="font-semibold text-gray-900">₹0.00</span>
                         </div>
                         <div class="flex justify-between">
-                            <span>Tax:</span>
-                            <span id="tax" class="font-semibold">₹0.00</span>
+                            <span class="text-gray-700">Tax:</span>
+                            <span id="tax" class="font-semibold text-gray-900">₹0.00</span>
                         </div>
                         <div class="flex justify-between">
-                            <span>Discount:</span>
+                            <span class="text-gray-700">Discount:</span>
                             <span id="discount" class="font-semibold text-red-600">-₹0.00</span>
                         </div>
-                        <div class="flex justify-between text-lg font-bold border-t pt-2">
-                            <span>Total:</span>
+                        <div class="flex justify-between text-lg font-bold border-t-2 border-yellow-300 pt-2 bg-gradient-to-r from-yellow-50 to-transparent p-2 rounded">
+                            <span class="text-gray-900">Total:</span>
                             <span id="total" class="text-blue-600">₹0.00</span>
                         </div>
                     </div>
                 </div>
 
                 <!-- Customer Selection -->
-                <div class="border-t p-4">
+                <div class="border-t-2 border-blue-200 p-4 bg-blue-50">
                     <div class="flex items-center justify-between mb-2">
-                        <label class="text-sm font-medium">Customer:</label>
+                        <label class="text-sm font-medium text-blue-900">Customer:</label>
                         <button 
                             onclick="showCustomerSearch()" 
-                            class="touch-button bg-blue-500 text-white px-3 py-1 rounded text-sm"
+                            class="touch-button bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-sm font-medium"
                         >
                             <i class="fas fa-user-plus mr-1"></i>
                             Add Customer
                         </button>
                     </div>
-                    <div id="selectedCustomer" class="text-sm text-gray-600">
+                    <div id="selectedCustomer" class="text-sm text-blue-700 bg-white p-2 rounded border border-blue-200">
                         <i class="fas fa-user mr-1"></i>
                         Walk-in Customer
                     </div>
                 </div>
 
                 <!-- Action Buttons -->
-                <div class="border-t p-4 space-y-2">
+                <div class="border-t-2 border-blue-200 p-4 space-y-2 bg-gradient-to-b from-white to-gray-50">
                     <button 
                         onclick="clearCart()" 
-                        class="touch-button w-full bg-gray-500 hover:bg-gray-600 text-white py-3 rounded font-medium"
+                        class="touch-button w-full bg-gray-500 hover:bg-gray-600 text-white py-3 rounded font-medium transition-colors"
                     >
                         <i class="fas fa-trash mr-2"></i>
                         Clear Cart
                     </button>
                     <button 
                         onclick="showPaymentModal()" 
-                        class="touch-button w-full bg-green-500 hover:bg-green-600 text-white py-3 rounded font-medium text-lg"
+                        class="touch-button w-full bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white py-3 rounded font-medium text-lg transition-all shadow-md hover:shadow-lg"
                         id="checkoutButton"
                         disabled
                     >
@@ -209,13 +251,16 @@
     </main>
 
     <!-- Payment Modal -->
-    <div id="paymentModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-        <div class="bg-white rounded-lg w-full max-w-md">
-            <div class="bg-blue-600 text-white p-4 rounded-t-lg">
-                <h3 class="text-lg font-semibold">Complete Payment</h3>
+    <div id="mobile-pos-payment-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-lg w-full max-w-md shadow-2xl">
+            <div class="bg-gradient-to-r from-blue-600 to-blue-700 text-white p-4 rounded-t-lg">
+                <h3 class="text-lg font-semibold flex items-center">
+                    <i class="fas fa-credit-card mr-2"></i>
+                    Complete Payment
+                </h3>
             </div>
             <div class="p-4">
-                <div class="text-center mb-4">
+                <div class="text-center mb-4 bg-gradient-to-r from-yellow-50 to-blue-50 p-4 rounded-lg">
                     <p class="text-sm text-gray-600">Total Amount</p>
                     <p id="paymentTotal" class="text-3xl font-bold text-blue-600">₹0.00</p>
                 </div>
@@ -224,60 +269,60 @@
                 <div class="grid grid-cols-2 gap-3 mb-4">
                     <button 
                         onclick="selectPaymentMethod('cash')" 
-                        class="payment-method touch-button border-2 border-gray-300 rounded-lg p-4 text-center hover:border-blue-500"
+                        class="payment-method touch-button border-2 border-gray-300 rounded-lg p-4 text-center hover:border-blue-500 hover:bg-blue-50 transition-all"
                         data-method="cash"
                     >
                         <i class="fas fa-money-bill-wave text-2xl text-green-600 mb-2"></i>
-                        <p class="font-medium">Cash</p>
+                        <p class="font-medium text-gray-800">Cash</p>
                     </button>
                     <button 
                         onclick="selectPaymentMethod('card')" 
-                        class="payment-method touch-button border-2 border-gray-300 rounded-lg p-4 text-center hover:border-blue-500"
+                        class="payment-method touch-button border-2 border-gray-300 rounded-lg p-4 text-center hover:border-blue-500 hover:bg-blue-50 transition-all"
                         data-method="card"
                     >
                         <i class="fas fa-credit-card text-2xl text-blue-600 mb-2"></i>
-                        <p class="font-medium">Card</p>
+                        <p class="font-medium text-gray-800">Card</p>
                     </button>
                     <button 
                         onclick="selectPaymentMethod('upi')" 
-                        class="payment-method touch-button border-2 border-gray-300 rounded-lg p-4 text-center hover:border-blue-500"
+                        class="payment-method touch-button border-2 border-gray-300 rounded-lg p-4 text-center hover:border-blue-500 hover:bg-blue-50 transition-all"
                         data-method="upi"
                     >
                         <i class="fas fa-mobile-alt text-2xl text-purple-600 mb-2"></i>
-                        <p class="font-medium">UPI</p>
+                        <p class="font-medium text-gray-800">UPI</p>
                     </button>
                     <button 
                         onclick="selectPaymentMethod('bank_transfer')" 
-                        class="payment-method touch-button border-2 border-gray-300 rounded-lg p-4 text-center hover:border-blue-500"
+                        class="payment-method touch-button border-2 border-gray-300 rounded-lg p-4 text-center hover:border-blue-500 hover:bg-blue-50 transition-all"
                         data-method="bank_transfer"
                     >
                         <i class="fas fa-university text-2xl text-orange-600 mb-2"></i>
-                        <p class="font-medium">Bank Transfer</p>
+                        <p class="font-medium text-gray-800">Bank Transfer</p>
                     </button>
                 </div>
 
                 <!-- Cash Amount Input (shown only for cash payment) -->
-                <div id="cashAmountSection" class="hidden mb-4">
-                    <label class="block text-sm font-medium mb-2">Cash Received:</label>
+                <div id="cashAmountSection" class="hidden mb-4 bg-yellow-50 p-3 rounded-lg border-2 border-yellow-200">
+                    <label class="block text-sm font-medium text-yellow-900 mb-2">Cash Received:</label>
                     <input 
                         type="number" 
                         id="cashReceived" 
-                        class="number-input w-full border rounded-lg p-3"
+                        class="number-input w-full border-2 border-yellow-300 rounded-lg p-3 focus:border-yellow-500 focus:ring-2 focus:ring-yellow-200"
                         placeholder="Enter cash amount"
                         step="0.01"
                     >
                     <div class="mt-2 text-sm">
-                        <span>Change: </span>
+                        <span class="text-yellow-900">Change: </span>
                         <span id="changeAmount" class="font-bold text-green-600">₹0.00</span>
                     </div>
                 </div>
 
                 <!-- Notes -->
                 <div class="mb-4">
-                    <label class="block text-sm font-medium mb-2">Notes (Optional):</label>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Notes (Optional):</label>
                     <textarea 
                         id="paymentNotes" 
-                        class="w-full border rounded-lg p-3"
+                        class="w-full border-2 border-gray-300 rounded-lg p-3 focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
                         rows="2"
                         placeholder="Add payment notes..."
                     ></textarea>
@@ -287,13 +332,13 @@
                 <div class="flex space-x-3">
                     <button 
                         onclick="closePaymentModal()" 
-                        class="touch-button flex-1 bg-gray-500 hover:bg-gray-600 text-white py-3 rounded font-medium"
+                        class="touch-button flex-1 bg-gray-500 hover:bg-gray-600 text-white py-3 rounded font-medium transition-colors"
                     >
                         Cancel
                     </button>
                     <button 
                         onclick="processPayment()" 
-                        class="touch-button flex-1 bg-green-500 hover:bg-green-600 text-white py-3 rounded font-medium"
+                        class="touch-button flex-1 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white py-3 rounded font-medium transition-all"
                         id="processPaymentButton"
                         disabled
                     >
@@ -307,9 +352,12 @@
 
     <!-- Customer Search Modal -->
     <div id="customerModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-        <div class="bg-white rounded-lg w-full max-w-md">
-            <div class="bg-blue-600 text-white p-4 rounded-t-lg">
-                <h3 class="text-lg font-semibold">Select Customer</h3>
+        <div class="bg-white rounded-lg w-full max-w-md shadow-2xl">
+            <div class="bg-gradient-to-r from-blue-600 to-blue-700 text-white p-4 rounded-t-lg">
+                <h3 class="text-lg font-semibold flex items-center">
+                    <i class="fas fa-users mr-2"></i>
+                    Select Customer
+                </h3>
             </div>
             <div class="p-4">
                 <div class="relative mb-4">
@@ -317,9 +365,9 @@
                         type="text" 
                         id="customerSearchInput" 
                         placeholder="Search customers..."
-                        class="w-full pl-10 pr-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        class="w-full pl-10 pr-4 py-3 border-2 border-blue-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     >
-                    <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                    <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-blue-400"></i>
                 </div>
                 <div id="customerResults" class="max-h-64 overflow-y-auto">
                     <!-- Customer results will be loaded here -->
@@ -327,13 +375,13 @@
                 <div class="mt-4 flex space-x-3">
                     <button 
                         onclick="closeCustomerModal()" 
-                        class="touch-button flex-1 bg-gray-500 hover:bg-gray-600 text-white py-3 rounded font-medium"
+                        class="touch-button flex-1 bg-gray-500 hover:bg-gray-600 text-white py-3 rounded font-medium transition-colors"
                     >
                         Cancel
                     </button>
                     <button 
                         onclick="createNewCustomer()" 
-                        class="touch-button flex-1 bg-blue-500 hover:bg-blue-600 text-white py-3 rounded font-medium"
+                        class="touch-button flex-1 bg-blue-500 hover:bg-blue-600 text-white py-3 rounded font-medium transition-colors"
                     >
                         <i class="fas fa-user-plus mr-2"></i>
                         New Customer
@@ -639,14 +687,24 @@
         function showPaymentModal() {
             if (cart.length === 0) return;
             
+            // Check if modal is already open
+            const modal = document.getElementById('mobile-pos-payment-modal');
+            if (!modal.classList.contains('hidden')) {
+                return;
+            }
+            
             const total = document.getElementById('total').textContent;
             document.getElementById('paymentTotal').textContent = total;
-            document.getElementById('paymentModal').classList.remove('hidden');
+            modal.classList.remove('hidden');
         }
 
         // Close payment modal
         function closePaymentModal() {
-            document.getElementById('paymentModal').classList.add('hidden');
+            const modal = document.getElementById('mobile-pos-payment-modal');
+            modal.classList.add('hidden');
+            // Remove the 'open' attribute to prevent conflicts with Filament modals
+            modal.removeAttribute('open');
+            
             selectedPaymentMethod = null;
             document.querySelectorAll('.payment-method').forEach(btn => {
                 btn.classList.remove('selected');

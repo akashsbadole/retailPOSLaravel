@@ -11,6 +11,7 @@ use Filament\Actions\Contracts\HasActions;
 use Filament\Notifications\Notification;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Config;
+use Filament\Schemas\Components\Section;
 
 class BarcodeSettings extends Page implements HasActions
 {
@@ -46,7 +47,7 @@ class BarcodeSettings extends Page implements HasActions
     {
         return $form
             ->schema([
-                Forms\Components\Section::make('Barcode Scanner Settings')
+                Section::make('Barcode Scanner Settings')
                     ->description('Configure barcode scanner behavior and validation')
                     ->schema([
                         Forms\Components\Select::make('default_barcode_format')
@@ -87,7 +88,7 @@ class BarcodeSettings extends Page implements HasActions
                     ])
                     ->columns(2),
                 
-                Forms\Components\Section::make('Barcode Validation')
+                Section::make('Barcode Validation')
                     ->description('Configure barcode validation rules')
                     ->schema([
                         Forms\Components\Toggle::make('require_unique_barcodes')
@@ -107,7 +108,7 @@ class BarcodeSettings extends Page implements HasActions
                     ])
                     ->columns(3),
                 
-                Forms\Components\Section::make('Barcode Printing')
+                Section::make('Barcode Printing')
                     ->description('Configure barcode label printing settings')
                     ->schema([
                         Forms\Components\Select::make('default_label_size')

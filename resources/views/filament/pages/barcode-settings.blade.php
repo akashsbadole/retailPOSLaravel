@@ -30,7 +30,7 @@
 </x-filament-panels::page>
 
 <!-- Scanner Test Modal -->
-<div x-data="{ isOpen: false }" x-show="isOpen" 
+<div id="barcode-scanner-test-modal" x-data="{ isOpen: false }" x-show="isOpen"
      x-transition:enter="transition ease-out duration-300"
      x-transition:enter-start="opacity-0"
      x-transition:enter-end="opacity-100"
@@ -75,8 +75,8 @@
                 </div>
                 
                 <div class="flex space-x-3">
-                    <button 
-                        @click="isOpen = false"
+                    <button
+                        @click="isOpen = false; $el.removeAttribute('open')"
                         class="flex-1 px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition-colors"
                     >
                         Cancel

@@ -4,10 +4,13 @@ namespace App\Filament\Actions;
 
 use App\Models\Backup;
 use App\Jobs\RestoreBackupJob;
-use Filament\Forms;
+use Filament\Forms\Components\CheckboxList;
+use Filament\Forms\Components\Placeholder;
+use Filament\Schemas\Components\Section;
+use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\Toggle;
 use Filament\Forms\Form;
-use Filament\Support\Enums\MaxWidth;
-use Filament\Tables\Actions\Action;
+use Filament\Actions\Action;
 use Illuminate\Support\Facades\Auth;
 
 class RestoreBackupAction extends Action
@@ -26,25 +29,25 @@ class RestoreBackupAction extends Action
             ->modalSubmitActionLabel('Yes, Restore')
             ->modalCancelActionLabel('Cancel')
             ->form([
-                Forms\Components\Section::make('Restore Options')
+                Section::make('Restore Options')
                     ->description('Configure how the backup should be restored')
                     ->schema([
-                        Forms\Components\Toggle::make('create_restore_point')
+                        Toggle::make('create_restore_point')
                             ->label('Create Restore Point')
                             ->default(true)
                             ->helperText('Create a restore point before restoring this backup'),
 
-                        Forms\Components\Toggle::make('disable_foreign_keys')
+                        Toggle::make('disable_foreign_keys')
                             ->label('Disable Foreign Key Checks')
                             ->default(true)
                             ->helperText('Temporarily disable foreign key checks during restore'),
 
-                        Forms\Components\Toggle::make('truncate_tables')
+                        Toggle::make('truncate_tables')
                             ->label('Truncate Tables First')
                             ->default(true)
                             ->helperText('Remove existing data before restoring'),
 
-                        Forms\Components\CheckboxList::make('tables')
+                        CheckboxList::make('tables')
                             ->label('Tables to Restore')
                             ->options(function (Backup $record) {
                                 $tables = $record->tables ?? [];
@@ -57,17 +60,17 @@ class RestoreBackupAction extends Action
                             ->helperText('Select which tables to restore. Leave all selected to restore everything.')
                             ->visible(fn (Backup $record) => $record->type === Backup::TYPE_SELECTIVE),
 
-                        Forms\Components\Textarea::make('notes')
+                        Textarea::make('notes')
                             ->label('Restore Notes')
                             ->rows(2)
                             ->helperText('Optional notes about this restore operation'),
                     ])
                     ->columns(1),
 
-                Forms\Components\Section::make('Warning')
+                Section::make('Warning')
                     ->description('Please read this warning carefully before proceeding')
                     ->schema([
-                        Forms\Components\Placeholder::make('warning')
+                        Placeholder::make('warning')
                             ->label('⚠️ Important Warning')
                             ->content(function (Backup $record) {
                                 $backupDate = $record->created_at->format('F j, Y \a\t g:i A');
@@ -130,6 +133,7 @@ class RestoreBackupAction extends Action
 
     public static function make(string $name = null): static
     {
+        $name = $name ?? 'restore_backup';
         $static = parent::make($name);
         
         // Customize for different contexts
@@ -140,7 +144,7 @@ class RestoreBackupAction extends Action
                 ->modalHeading('Quick Restore')
                 ->modalDescription('Quick restore from this backup with default options')
                 ->form([
-                    Forms\Components\Placeholder::make('warning')
+                    Placeholder::make('warning')
                         ->label('⚠️ Warning')
                         ->content(function (Backup $record) {
                             $backupDate = $record->created_at->format('F j, Y \a\t g:i A');

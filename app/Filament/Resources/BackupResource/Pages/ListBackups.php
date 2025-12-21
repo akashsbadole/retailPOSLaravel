@@ -9,6 +9,7 @@ use Filament\Actions;
 use Filament\Actions\Action;
 use Filament\Resources\Pages\ListRecords;
 use Filament\Tables\Table;
+use Filament\Schemas\Components\Tabs\Tab;
 use Illuminate\Database\Eloquent\Builder;
 
 class ListBackups extends ListRecords
@@ -53,8 +54,8 @@ class ListBackups extends ListRecords
                     ->label('View Details')
                     ->icon('heroicon-o-eye')
                     ->color('primary')
-                    ->modalContent(fn (Backup $record): string => 
-                        view('filament.resources.backup-resource.view', ['record' => $record])->render()
+                    ->modalContent(fn (Backup $record) => 
+                        view('filament.resources.backup-resource.view', ['record' => $record])
                     )
                     ->modalWidth('2xl')
                     ->modalFooterActions(fn (Backup $record): array => [
@@ -92,22 +93,22 @@ class ListBackups extends ListRecords
     public function getTabs(): array
     {
         return [
-            'all' => \Filament\Resources\Components\Tab::make('All Backups')
+            'all' => Tab::make('All Backups')
                 ->modifyQueryUsing(fn (Builder $query) => $query),
             
-            'processing' => \Filament\Resources\Components\Tab::make('Processing')
+            'processing' => Tab::make('Processing')
                 ->modifyQueryUsing(fn (Builder $query) => $query->where('status', Backup::STATUS_PROCESSING))
                 ->badge(Backup::where('status', Backup::STATUS_PROCESSING)->count()),
             
-            'completed' => \Filament\Resources\Components\Tab::make('Completed')
+            'completed' => Tab::make('Completed')
                 ->modifyQueryUsing(fn (Builder $query) => $query->where('status', Backup::STATUS_COMPLETED))
                 ->badge(Backup::where('status', Backup::STATUS_COMPLETED)->count()),
             
-            'failed' => \Filament\Resources\Components\Tab::make('Failed')
+            'failed' => Tab::make('Failed')
                 ->modifyQueryUsing(fn (Builder $query) => $query->where('status', Backup::STATUS_FAILED))
                 ->badge(Backup::where('status', Backup::STATUS_FAILED)->count()),
             
-            'recent' => \Filament\Resources\Components\Tab::make('Recent (7 days)')
+            'recent' => Tab::make('Recent (7 days)')
                 ->modifyQueryUsing(fn (Builder $query) => $query->recent(7)),
         ];
     }

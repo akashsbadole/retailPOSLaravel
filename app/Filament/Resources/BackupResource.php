@@ -10,9 +10,14 @@ use App\Filament\Actions\DeleteBackupAction;
 use App\Models\Backup;
 use Filament\Forms;
 use Filament\Schemas\Schema;
+use Filament\Schemas\Components\Section;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Filament\Actions\ViewAction;
+use Filament\Actions\DeleteAction;
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteBulkAction;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Illuminate\Support\Facades\Storage;
@@ -33,7 +38,7 @@ class BackupResource extends Resource
     {
         return $schema
             ->schema([
-                Forms\Components\Section::make('Backup Information')
+                Section::make('Backup Information')
                     ->schema([
                         Forms\Components\TextInput::make('name')
                             ->required()
@@ -85,7 +90,7 @@ class BackupResource extends Resource
                             ->helperText('Create backup for specific store or all stores')
                             ->visible(fn () => config('backup.multi_store.enabled', true)),
 
-                        Forms\Components\Section::make('Backup Options')
+                        Section::make('Backup Options')
                             ->schema([
                                 Forms\Components\Toggle::make('options.compression')
                                     ->label('Enable Compression')
@@ -258,9 +263,9 @@ class BackupResource extends Resource
                     }),
             ])
             ->actions([
-                Tables\Actions\ViewAction::make()
-                    ->modalContent(fn (Backup $record): string => 
-                        view('filament.resources.backup-resource.view', ['record' => $record])->render()
+                ViewAction::make()
+                    ->modalContent(fn (Backup $record) => 
+                        view('filament.resources.backup-resource.view', ['record' => $record])
                     ),
 
                 DownloadBackupAction::make()
@@ -269,15 +274,15 @@ class BackupResource extends Resource
                 RestoreBackupAction::make()
                     ->visible(fn (Backup $record): bool => $record->isCompleted()),
 
-                Tables\Actions\DeleteAction::make()
+                DeleteAction::make()
                     ->requiresConfirmation()
                     ->modalHeading('Delete Backup')
                     ->modalDescription('Are you sure you want to delete this backup? This action cannot be undone.')
                     ->modalSubmitActionLabel('Yes, Delete'),
             ])
             ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make()
+                BulkActionGroup::make([
+                    DeleteBulkAction::make()
                         ->requiresConfirmation()
                         ->modalHeading('Delete Selected Backups')
                         ->modalDescription('Are you sure you want to delete the selected backups? This action cannot be undone.')

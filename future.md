@@ -64,9 +64,9 @@
 10. ❌ Payment Reminder System (WhatsApp/SMS/Email)
 11. ❌ Bill-wise Payment Tracking
 12. ❌ Party Ledger (Receivables/Payables)
-13. ❌ Cheque Management
-14. ❌ Bank Account Management (Multiple accounts)
-15. ❌ Split Payment Support
+13. ❌ Cheque Management -ignore for now
+14. ❌ Bank Account Management (Multiple accounts - ignore for now)
+15. ❌ Split Payment Support {ignore for now}
 
 ### Inventory (7 Missing)
 16. ❌ Batch Number Tracking
@@ -122,11 +122,11 @@
 58. ❌ Warranty Tracking
 
 ### Technology Features (10 Missing)
-59. ❌ Offline Mode (Work without internet)
-60. ❌ Auto Data Backup (Google Drive)
+59. ❌ Offline Mode (Work without internet - ignore for now)
+60. ❌ Auto Data Backup
 61. ❌ Local Backup
 62. ❌ Data Restore
-63. ❌ Multi-device Sync (Mobile + Desktop)
+63. ❌ Multi-device Sync (Mobile + Desktop - ignore for now)
 64. ❌ WhatsApp Integration (Invoice sharing)
 65. ❌ SMS Gateway Integration
 66. ❌ Email Integration
@@ -140,13 +140,13 @@
 72. ❌ Barcode Label Printing
 73. ❌ A4/A5 Format Support
 
-### Customer Features (4 Missing)
+### Customer Features (4 Missing - ignore for now)
 74. ❌ Online Store (Customer portal)
 75. ❌ Customer App
 76. ❌ Order Tracking for Customers
 77. ❌ Customer Feedback System
 
-### Advanced Features (8 Missing)
+### Advanced Features (8 Missing - ignore for now)
 78. ❌ OCR Bill Scanning
 79. ❌ Card Payment Terminal Integration (PineLabs)
 80. ❌ Aadhaar-based KYC

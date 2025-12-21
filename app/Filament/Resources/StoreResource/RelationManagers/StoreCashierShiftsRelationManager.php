@@ -11,7 +11,7 @@ use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Actions\ViewAction;
 use Filament\Tables\Actions\EditAction;
 use Filament\Tables\Actions\DeleteAction;
-use Filament\Tables\Actions\Action;
+use Filament\Actions\Action;
 
 class StoreCashierShiftsRelationManager extends RelationManager
 {

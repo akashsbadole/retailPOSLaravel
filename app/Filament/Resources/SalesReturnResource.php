@@ -20,6 +20,7 @@ use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Illuminate\Support\Facades\Auth;
+use Filament\Schemas\Components\Section;
 
 class SalesReturnResource extends Resource
 {
@@ -35,7 +36,7 @@ class SalesReturnResource extends Resource
     {
         return $form
             ->schema([
-                Forms\Components\Section::make('Return Information')
+                Section::make('Return Information')
                     ->schema([
                         Forms\Components\Select::make('order_id')
                             ->relationship('order', 'id', function ($query) {
@@ -92,7 +93,7 @@ class SalesReturnResource extends Resource
                     ])
                     ->columns(2),
 
-                Forms\Components\Section::make('Return Items')
+                Section::make('Return Items')
                     ->schema([
                         Forms\Components\Repeater::make('items')
                             ->relationship()

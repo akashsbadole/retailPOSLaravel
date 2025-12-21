@@ -6,10 +6,14 @@ use App\Models\Backup;
 use App\Models\Store;
 use App\Services\BackupService;
 use App\Jobs\CreateBackupJob;
-use Filament\Forms;
+use Filament\Forms\Components\CheckboxList;
+use Filament\Schemas\Components\Section;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Toggle;
 use Filament\Forms\Form;
-use Filament\Support\Enums\MaxWidth;
-use Filament\Tables\Actions\Action;
+use Filament\Actions\Action;
 use Illuminate\Support\Facades\Auth;
 
 class CreateBackupAction extends Action
@@ -23,23 +27,23 @@ class CreateBackupAction extends Action
             ->color('primary')
             ->modalHeading('Create New Backup')
             ->modalDescription('Configure and create a new database backup')
-            ->modalWidth(MaxWidth::TwoExtraLarge)
+            ->modalWidth('2xl')
             ->form([
-                Forms\Components\Section::make('Backup Configuration')
+                Section::make('Backup Configuration')
                     ->schema([
-                        Forms\Components\TextInput::make('name')
+                        TextInput::make('name')
                             ->label('Backup Name')
                             ->required()
                             ->maxLength(255)
                             ->default(fn () => 'Backup - ' . now()->format('Y-m-d H:i:s'))
                             ->helperText('A descriptive name for this backup'),
 
-                        Forms\Components\Textarea::make('description')
+                        Textarea::make('description')
                             ->label('Description')
                             ->rows(2)
                             ->helperText('Optional description of what this backup contains'),
 
-                        Forms\Components\Select::make('type')
+                        Select::make('type')
                             ->label('Backup Type')
                             ->options([
                                 Backup::TYPE_FULL => 'Full Backup - Complete database backup',
@@ -54,7 +58,7 @@ class CreateBackupAction extends Action
                             )
                             ->helperText('Select the type of backup to create'),
 
-                        Forms\Components\CheckboxList::make('tables')
+                        CheckboxList::make('tables')
                             ->label('Tables to Include')
                             ->options(function () {
                                 $tables = config('backup.tables.include.selective', []);
@@ -65,7 +69,7 @@ class CreateBackupAction extends Action
                             ->visible(fn (callable $get) => $get('type') === Backup::TYPE_SELECTIVE)
                             ->helperText('Select which tables to include in the backup'),
 
-                        Forms\Components\Select::make('format')
+                        Select::make('format')
                             ->label('Backup Format')
                             ->options([
                                 Backup::FORMAT_SQL => 'SQL - Standard SQL dump file',
@@ -75,7 +79,7 @@ class CreateBackupAction extends Action
                             ->required()
                             ->helperText('Choose the backup file format'),
 
-                        Forms\Components\Select::make('store_id')
+                        Select::make('store_id')
                             ->label('Store')
                             ->placeholder('All Stores')
                             ->options(function () {
@@ -90,20 +94,20 @@ class CreateBackupAction extends Action
                     ])
                     ->columns(2),
 
-                Forms\Components\Section::make('Advanced Options')
+                Section::make('Advanced Options')
                     ->schema([
-                        Forms\Components\Toggle::make('options.compression')
+                        Toggle::make('options.compression')
                             ->label('Enable Compression')
                             ->default(config('backup.compression.enabled', true))
                             ->helperText('Compress the backup file to save storage space'),
 
-                        Forms\Components\Toggle::make('options.encryption')
+                        Toggle::make('options.encryption')
                             ->label('Enable Encryption')
                             ->default(config('backup.encryption.enabled', false))
                             ->helperText('Encrypt the backup file for security')
                             ->visible(fn () => config('backup.encryption.key', false)),
 
-                        Forms\Components\Toggle::make('options.send_notification')
+                        Toggle::make('options.send_notification')
                             ->label('Send Notification')
                             ->default(config('backup.notifications.on_success', true))
                             ->helperText('Send notification when backup completes'),
@@ -111,10 +115,8 @@ class CreateBackupAction extends Action
                     ->columns(1),
             ])
             ->action(function (array $data) {
-                // Prepare backup options
                 $options = $data['options'] ?? [];
                 
-                // Create backup record
                 $backupService = app(BackupService::class);
                 $backup = $backupService->createBackup(
                     type: $data['type'],
@@ -126,12 +128,10 @@ class CreateBackupAction extends Action
                     store: $data['store_id'] ? Store::find($data['store_id']) : null
                 );
 
-                // Update backup name if provided
                 if (!empty($data['name'])) {
                     $backup->update(['name' => $data['name']]);
                 }
 
-                // Dispatch backup job
                 CreateBackupJob::dispatch($backup->id);
 
                 $this->successNotification()
@@ -145,16 +145,16 @@ class CreateBackupAction extends Action
 
     public static function make(string $name = null): static
     {
+        $name = $name ?? 'create_backup';
         $static = parent::make($name);
         
-        // Customize for different contexts
         if ($name === 'create_quick_backup') {
             $static->label('Quick Backup')
                 ->icon('heroicon-o-bolt')
                 ->color('success')
                 ->modalHeading('Create Quick Backup')
                 ->form([
-                    Forms\Components\Select::make('type')
+                    Select::make('type')
                         ->label('Backup Type')
                         ->options([
                             Backup::TYPE_FULL => 'Full Backup',
@@ -163,7 +163,7 @@ class CreateBackupAction extends Action
                         ->default(Backup::TYPE_INCREMENTAL)
                         ->required(),
                     
-                    Forms\Components\Toggle::make('options.send_notification')
+                    Toggle::make('options.send_notification')
                         ->label('Send Notification')
                         ->default(true),
                 ]);

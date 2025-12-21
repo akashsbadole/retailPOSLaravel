@@ -10,6 +10,7 @@ use Filament\Actions;
 use Filament\Notifications\Notification;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Config;
+use Filament\Schemas\Components\Section;
 
 class BackupSettings extends Page
 {
@@ -98,7 +99,7 @@ class BackupSettings extends Page
     {
         return $schema
             ->schema([
-                Forms\Components\Section::make('Retention Policy')
+                Section::make('Retention Policy')
                     ->description('Configure how long different types of backups should be retained')
                     ->schema([
                         Forms\Components\Grid::make(2)
@@ -133,7 +134,7 @@ class BackupSettings extends Page
                             ]),
                     ]),
 
-                Forms\Components\Section::make('Compression Settings')
+                Section::make('Compression Settings')
                     ->description('Configure backup compression options')
                     ->schema([
                         Forms\Components\Toggle::make('compression.enabled')
@@ -160,7 +161,7 @@ class BackupSettings extends Page
                     ])
                     ->columns(2),
 
-                Forms\Components\Section::make('Encryption Settings')
+                Section::make('Encryption Settings')
                     ->description('Configure backup encryption for security')
                     ->schema([
                         Forms\Components\Toggle::make('encryption.enabled')
@@ -177,7 +178,7 @@ class BackupSettings extends Page
                     ])
                     ->columns(2),
 
-                Forms\Components\Section::make('Notification Settings')
+                Section::make('Notification Settings')
                     ->description('Configure backup notifications')
                     ->schema([
                         Forms\Components\Toggle::make('notifications.enabled')
@@ -211,12 +212,12 @@ class BackupSettings extends Page
                     ])
                     ->columns(1),
 
-                Forms\Components\Section::make('Automatic Backup Schedules')
+                Section::make('Automatic Backup Schedules')
                     ->description('Configure automatic backup schedules')
                     ->schema([
                         Forms\Components\Grid::make(1)
                             ->schema([
-                                Forms\Components\Section::make('Daily Backup')
+                                Section::make('Daily Backup')
                                     ->schema([
                                         Forms\Components\Toggle::make('schedules.daily.enabled')
                                             ->label('Enable Daily Backup')
@@ -243,7 +244,7 @@ class BackupSettings extends Page
                                     ])
                                     ->collapsed(),
                                 
-                                Forms\Components\Section::make('Weekly Backup')
+                                Section::make('Weekly Backup')
                                     ->schema([
                                         Forms\Components\Toggle::make('schedules.weekly.enabled')
                                             ->label('Enable Weekly Backup')
@@ -283,7 +284,7 @@ class BackupSettings extends Page
                                     ])
                                     ->collapsed(),
                                 
-                                Forms\Components\Section::make('Monthly Backup')
+                                Section::make('Monthly Backup')
                                     ->schema([
                                         Forms\Components\Toggle::make('schedules.monthly.enabled')
                                             ->label('Enable Monthly Backup')
@@ -320,7 +321,7 @@ class BackupSettings extends Page
                     ])
                     ->collapsed(),
 
-                Forms\Components\Section::make('Multi-Store Settings')
+                Section::make('Multi-Store Settings')
                     ->description('Configure multi-store backup options')
                     ->schema([
                         Forms\Components\Toggle::make('multi_store.enabled')

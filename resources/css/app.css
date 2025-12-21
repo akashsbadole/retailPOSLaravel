@@ -1,6 +1,80 @@
 @import 'tailwindcss';
 @import '../../vendor/filament/filament/dist/theme.css';
 
-.bg-redColor{
-    background: red;
+/* Custom Color Scheme: Blue, Red, Yellow */
+:root {
+    --color-primary-blue: #3b82f6;
+    --color-accent-red: #ef4444;
+    --color-accent-yellow: #fbbf24;
+    --color-primary-dark-blue: #1e40af;
+    --color-light-blue: #dbeafe;
+}
+
+/* Background colors */
+.bg-primary-blue {
+    background-color: var(--color-primary-blue);
+}
+
+.bg-primary-dark-blue {
+    background-color: var(--color-primary-dark-blue);
+}
+
+.bg-accent-red {
+    background-color: var(--color-accent-red);
+}
+
+.bg-accent-yellow {
+    background-color: var(--color-accent-yellow);
+}
+
+.bg-light-blue {
+    background-color: var(--color-light-blue);
+}
+
+/* Text colors */
+.text-primary-blue {
+    color: var(--color-primary-blue);
+}
+
+.text-accent-red {
+    color: var(--color-accent-red);
+}
+
+.text-accent-yellow {
+    color: var(--color-accent-yellow);
+}
+
+/* Border colors */
+.border-primary-blue {
+    border-color: var(--color-primary-blue);
+}
+
+.border-accent-red {
+    border-color: var(--color-accent-red);
+}
+
+.border-accent-yellow {
+    border-color: var(--color-accent-yellow);
+}
+
+/* Hover states */
+.hover\:bg-primary-blue:hover {
+    background-color: var(--color-primary-blue);
+}
+
+.hover\:bg-primary-dark-blue:hover {
+    background-color: var(--color-primary-dark-blue);
+}
+
+.hover\:bg-accent-red:hover {
+    background-color: var(--color-accent-red);
+}
+
+.hover\:bg-accent-yellow:hover {
+    background-color: var(--color-accent-yellow);
+}
+
+/* Legacy support */
+.bg-redColor {
+    background: var(--color-accent-red);
 }

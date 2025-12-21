@@ -7,7 +7,7 @@ use App\Models\Order;
 use Filament\Tables\Table;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\Filter;
-use Filament\Tables\Actions\Action;
+use Filament\Actions\Action;
 
 class Pos extends Page
 {

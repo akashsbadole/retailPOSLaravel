@@ -16,6 +16,7 @@ use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\Summarizers\Sum;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
+use Filament\Schemas\Components\Section;
 
 class ShiftReports extends Page
 {
@@ -46,7 +47,7 @@ class ShiftReports extends Page
     public function filterForm(): Form
     {
         return Forms\Form::make([
-            Forms\Components\Section::make('Filter Reports')
+            Section::make('Filter Reports')
                 ->schema([
                     Forms\Components\Grid::make(2)->schema([
                         Forms\Components\Select::make('date_range')

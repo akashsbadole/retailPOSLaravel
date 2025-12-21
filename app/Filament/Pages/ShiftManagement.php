@@ -10,6 +10,7 @@ use Filament\Pages\Page;
 use Filament\Actions\Action;
 use Filament\Notifications\Notification;
 use Illuminate\Support\Facades\Auth;
+use Filament\Schemas\Components\Section;
 
 class ShiftManagement extends Page
 {
@@ -35,7 +36,7 @@ class ShiftManagement extends Page
     public function openShiftForm(): Form
     {
         return Forms\Form::make([
-            Forms\Components\Section::make('Open New Shift')
+            Section::make('Open New Shift')
                 ->description('Start a new shift by entering the opening cash amount')
                 ->schema([
                     Forms\Components\TextInput::make('opening_cash')
@@ -59,7 +60,7 @@ class ShiftManagement extends Page
     public function closeShiftForm(): Form
     {
         return Forms\Form::make([
-            Forms\Components\Section::make('Close Current Shift')
+            Section::make('Close Current Shift')
                 ->description('Close your shift by reconciling cash and sales')
                 ->schema([
                     Forms\Components\Placeholder::make('shift_summary')

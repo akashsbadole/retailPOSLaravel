@@ -3,7 +3,7 @@
 namespace App\Filament\Actions;
 
 use App\Models\Backup;
-use Filament\Tables\Actions\Action;
+use Filament\Actions\Action;
 use Illuminate\Support\Facades\Storage;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
@@ -74,6 +74,7 @@ class DownloadBackupAction extends Action
 
     public static function make(string $name = null): static
     {
+        $name = $name ?? 'download_backup';
         $static = parent::make($name);
         
         // Customize for different contexts

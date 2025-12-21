@@ -3,8 +3,8 @@
 namespace App\Filament\Widgets;
 
 use App\Models\SalesReturn;
-use Filament\Actions\Action;
 use Filament\Tables;
+use Filament\Actions\Action;
 use Filament\Tables\Table;
 use Filament\Widgets\TableWidget as BaseWidget;
 use Illuminate\Database\Eloquent\Builder;

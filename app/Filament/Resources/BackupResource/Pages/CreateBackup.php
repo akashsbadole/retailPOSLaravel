@@ -8,10 +8,12 @@ use App\Models\Store;
 use App\Services\BackupService;
 use App\Jobs\CreateBackupJob;
 use Filament\Forms;
+use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
 use Filament\Resources\Pages\CreateRecord;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Log;
 
 class CreateBackup extends CreateRecord
 {
@@ -29,10 +31,10 @@ class CreateBackup extends CreateRecord
     public function form(Schema $schema): Schema
     {
         return $schema
-            ->schema([
-                Forms\Components\Section::make('Backup Configuration')
+            ->components([
+                Section::make('Backup Configuration')
                     ->description('Configure the basic settings for your backup')
-                    ->schema([
+                    ->components([
                         Forms\Components\TextInput::make('name')
                             ->label('Backup Name')
                             ->required()
@@ -96,9 +98,9 @@ class CreateBackup extends CreateRecord
                     ])
                     ->columns(2),
 
-                Forms\Components\Section::make('Advanced Options')
+                Section::make('Advanced Options')
                     ->description('Configure additional backup options')
-                    ->schema([
+                    ->components([
                         Forms\Components\Toggle::make('options.compression')
                             ->label('Enable Compression')
                             ->default(config('backup.compression.enabled', true))
@@ -122,9 +124,9 @@ class CreateBackup extends CreateRecord
                     ])
                     ->columns(2),
 
-                Forms\Components\Section::make('Storage Settings')
+                Section::make('Storage Settings')
                     ->description('Configure where the backup will be stored')
-                    ->schema([
+                    ->components([
                         Forms\Components\Select::make('disk')
                             ->label('Storage Disk')
                             ->options(function () {
@@ -150,9 +152,9 @@ class CreateBackup extends CreateRecord
                     ])
                     ->columns(2),
 
-                Forms\Components\Section::make('Preview')
+                Section::make('Preview')
                     ->description('Review your backup configuration before creating')
-                    ->schema([
+                    ->components([
                         Forms\Components\Placeholder::make('preview')
                             ->label('Backup Summary')
                             ->content(function (callable $get) {
@@ -215,7 +217,12 @@ class CreateBackup extends CreateRecord
         }
 
         // Dispatch backup job
-        CreateBackupJob::dispatch($backup->id);
+        try {
+            CreateBackupJob::dispatch($backup->id)->onConnection('sync');
+        } catch (\Exception $e) {
+            Log::error('Failed to dispatch backup job', ['error' => $e->getMessage()]);
+            // Job will still be created, just log the dispatch error
+        }
 
         return $backup;
     }

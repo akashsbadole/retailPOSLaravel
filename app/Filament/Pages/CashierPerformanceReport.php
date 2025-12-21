@@ -19,6 +19,7 @@ use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 use Filament\Widgets\StatsOverviewWidget\Stat;
 use Filament\Widgets\StatsOverviewWidget as BaseWidget;
+use Filament\Schemas\Components\Section;
 
 class CashierPerformanceReport extends Page
 {
@@ -47,7 +48,7 @@ class CashierPerformanceReport extends Page
     public function filterForm(): Form
     {
         return Forms\Form::make([
-            Forms\Components\Section::make('Filter Reports')
+            Section::make('Filter Reports')
                 ->schema([
                     Forms\Components\Grid::make(2)->schema([
                         Forms\Components\Select::make('date_range')

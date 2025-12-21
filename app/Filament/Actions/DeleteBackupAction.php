@@ -3,8 +3,10 @@
 namespace App\Filament\Actions;
 
 use App\Models\Backup;
-use Filament\Forms;
-use Filament\Tables\Actions\Action;
+use Filament\Forms\Components\Checkbox;
+use Filament\Forms\Components\Placeholder;
+use Filament\Schemas\Components\Section;
+use Filament\Actions\Action;
 use Illuminate\Support\Facades\Storage;
 
 class DeleteBackupAction extends Action
@@ -23,9 +25,9 @@ class DeleteBackupAction extends Action
             ->modalSubmitActionLabel('Yes, Delete')
             ->modalCancelActionLabel('Cancel')
             ->form([
-                Forms\Components\Section::make('Backup Information')
+                Section::make('Backup Information')
                     ->schema([
-                        Forms\Components\Placeholder::make('backup_info')
+                        Placeholder::make('backup_info')
                             ->label('Backup Details')
                             ->content(function (Backup $record) {
                                 $backupDate = $record->created_at->format('F j, Y \a\t g:i A');
@@ -45,10 +47,10 @@ class DeleteBackupAction extends Action
                             }),
                     ]),
                 
-                Forms\Components\Section::make('Warning')
+                Section::make('Warning')
                     ->description('Please read this warning carefully before proceeding')
                     ->schema([
-                        Forms\Components\Placeholder::make('warning')
+                        Placeholder::make('warning')
                             ->label('⚠️ Important Warning')
                             ->content(function (Backup $record) {
                                 $isCompleted = $record->isCompleted();
@@ -71,7 +73,7 @@ class DeleteBackupAction extends Action
                             }),
                     ]),
                 
-                Forms\Components\Checkbox::make('confirm_delete')
+                Checkbox::make('confirm_delete')
                     ->label('I understand that this action cannot be undone')
                     ->required()
                     ->validationMessages([
@@ -80,7 +82,6 @@ class DeleteBackupAction extends Action
             ])
             ->action(function (Backup $record, array $data) {
                 try {
-                    // Double-check confirmation
                     if (!($data['confirm_delete'] ?? false)) {
                         $this->failureNotification()
                             ->title('Deletion Cancelled')
@@ -89,7 +90,6 @@ class DeleteBackupAction extends Action
                         return;
                     }
 
-                    // Check if backup is currently processing
                     if ($record->isProcessing()) {
                         $this->failureNotification()
                             ->title('Cannot Delete')
@@ -98,7 +98,6 @@ class DeleteBackupAction extends Action
                         return;
                     }
 
-                    // Delete the backup (this will also delete the file due to model event)
                     $record->delete();
 
                     $this->successNotification()
@@ -119,9 +118,9 @@ class DeleteBackupAction extends Action
 
     public static function make(string $name = null): static
     {
+        $name = $name ?? 'delete_backup';
         $static = parent::make($name);
         
-        // Customize for different contexts
         if ($name === 'bulk_delete') {
             $static->label('Delete Selected')
                 ->icon('heroicon-o-trash')
@@ -132,13 +131,12 @@ class DeleteBackupAction extends Action
                 ->modalSubmitActionLabel('Yes, Delete All')
                 ->modalCancelActionLabel('Cancel')
                 ->form([
-                    Forms\Components\Checkbox::make('confirm_bulk_delete')
+                    Checkbox::make('confirm_bulk_delete')
                         ->label('I understand that this action cannot be undone')
                         ->required(),
                 ])
                 ->action(function (array $data) {
                     try {
-                        // Double-check confirmation
                         if (!($data['confirm_bulk_delete'] ?? false)) {
                             $this->failureNotification()
                                 ->title('Deletion Cancelled')
@@ -147,10 +145,8 @@ class DeleteBackupAction extends Action
                             return;
                         }
 
-                        // Get selected records from the table
                         $records = $this->getSelectedRecords();
 
-                        // Check if any are processing
                         $processingCount = $records->filter(fn ($record) => $record->isProcessing())->count();
                         if ($processingCount > 0) {
                             $this->failureNotification()
@@ -160,7 +156,6 @@ class DeleteBackupAction extends Action
                             return;
                         }
 
-                        // Delete all selected records
                         $deletedCount = 0;
                         foreach ($records as $record) {
                             $record->delete();

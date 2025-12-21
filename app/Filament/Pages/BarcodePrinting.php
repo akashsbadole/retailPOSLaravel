@@ -18,6 +18,7 @@ use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Storage;
 use Mpdf\Mpdf;
 use Mpdf\Output\Destination;
+use Filament\Schemas\Components\Section;
 
 class BarcodePrinting extends Page implements HasTable
 {
@@ -47,7 +48,7 @@ class BarcodePrinting extends Page implements HasTable
     {
         return $form
             ->schema([
-                Forms\Components\Section::make('Barcode Settings')
+                Section::make('Barcode Settings')
                     ->schema([
                         Forms\Components\Select::make('barcodeFormat')
                             ->label('Barcode Format')
